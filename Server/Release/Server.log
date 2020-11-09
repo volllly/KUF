@@ -1,0 +1,8 @@
+﻿  DmxDllAccess.cpp
+  Server.cpp
+  ServerCallbackHandler.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 954 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Server.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Release\Server.exe

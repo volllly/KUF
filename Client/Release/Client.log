@@ -1,0 +1,7 @@
+﻿  CallbackHandler.cpp
+  Client.cpp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 943 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  Client.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Release\Client.exe

@@ -1,0 +1,2 @@
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Network.pdb
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Network\Debug\Network.pdb
