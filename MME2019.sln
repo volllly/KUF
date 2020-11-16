@@ -1,15 +1,20 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.1267
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Network", "Network\Network.vcxproj", "{C263369A-FEF0-4FA8-A8CA-C80C8B21C645}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DMX", "DMX\DMX.vcxproj", "{9CBCCC9C-F7B5-4110-BE82-091EF999619E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{AA6190FC-06F6-44EE-A65E-B0E606875E3A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4} = {C47E807A-9AB4-4709-BF4D-EA00E32484A4}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{ED753446-415E-41FC-A1D5-130B338455B0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Protocol", "Protocol\Protocol.vcxproj", "{C47E807A-9AB4-4709-BF4D-EA00E32484A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +56,14 @@ Global
 		{ED753446-415E-41FC-A1D5-130B338455B0}.Release|x64.Build.0 = Release|x64
 		{ED753446-415E-41FC-A1D5-130B338455B0}.Release|x86.ActiveCfg = Release|Win32
 		{ED753446-415E-41FC-A1D5-130B338455B0}.Release|x86.Build.0 = Release|Win32
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Debug|x64.ActiveCfg = Debug|x64
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Debug|x64.Build.0 = Debug|x64
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Debug|x86.ActiveCfg = Debug|Win32
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Debug|x86.Build.0 = Debug|Win32
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Release|x64.ActiveCfg = Release|x64
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Release|x64.Build.0 = Release|x64
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Release|x86.ActiveCfg = Release|Win32
+		{C47E807A-9AB4-4709-BF4D-EA00E32484A4}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
