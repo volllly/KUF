@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <optional>
+#include <iostream>
 
 enum class Ring {
 	MAIN,
@@ -93,6 +94,9 @@ public:
 	Value(unsigned int light, Ring ring);
 	Value(unsigned int light, Ring ring, Color color);
 	Value(unsigned int light, Ring ring, Color color, double value);
+
+	Value(std::string);
+
 	std::string ToString();
 };
 
@@ -103,6 +107,10 @@ protected:
 public:
 	virtual std::string ToString();
 	virtual std::string Payload();
+
+	~Message() {
+		std::cout << "deconstructed";
+	}
 };
 
 class Command : public Message {
@@ -113,8 +121,6 @@ protected:
 
 public:
 	Cmd Cmd();
-
-	static Command Parse(std::string command);
 };
 
 class Reply : public Message {
@@ -125,8 +131,6 @@ protected:
 
 public:
 	StatusCode StatusCode();
-
-	static Reply Parse(std::string reply);
 };
 
 namespace Commands {
@@ -135,15 +139,18 @@ namespace Commands {
 	private:
 		std::vector<std::string> _versions;
 		std::string Payload();
-
+		
 	public:
 		Connect();
+		Connect(std::vector<std::string> versions);
+		static Connect* Parse(std::string from);
 	};
 
 	class Version : public Command
 	{
 	public:
 		Version();
+		static Version* Parse();
 	};
 
 	class Set : public Command
@@ -153,6 +160,7 @@ namespace Commands {
 		std::string Payload();
 	public:
 		Set(std::vector<Value> values);
+		static Set* Parse(std::string from);
 	};
 
 	class Reset : public Command
@@ -162,6 +170,7 @@ namespace Commands {
 		std::string Payload();
 	public:
 		Reset(std::vector<unsigned int> lights);
+		static Reset* Parse(std::string from);
 	};
 
 	class Status : public Command
@@ -171,12 +180,14 @@ namespace Commands {
 		std::string Payload();
 	public:
 		Status(std::vector<unsigned int> lights);
+		static Status* Parse(std::string from);
 	};
 
 	class Config : public Command
 	{
 	public:
 		Config();
+		static Config* Parse();
 	};
 }
 
@@ -185,6 +196,7 @@ namespace Replies {
 	{
 	public:
 		Done();
+		static Done* Parse();
 	};
 
 	class Version : public Reply
@@ -194,6 +206,7 @@ namespace Replies {
 		std::string Payload();
 	public:
 		Version(std::string version);
+		static Version* Parse(std::string from);
 	};
 
 	class Config : public Reply
@@ -203,6 +216,7 @@ namespace Replies {
 		std::string Payload();
 	public:
 		Config(unsigned int lights);
+		static Config* Parse(std::string from);
 	};
 
 	class StatusDifference : public Reply
@@ -212,20 +226,22 @@ namespace Replies {
 		std::string Payload();
 	public:
 		StatusDifference(std::vector<Value> status);
+		static StatusDifference* Parse(std::string from);
 	};
 
 	class Status : public StatusDifference {
 	public:
 		Status(std::vector<Value> status);
+		static Status* Parse(std::string from);
 	};
 
-	class NotFound : public Reply
-	{
+	class NotFound : public Reply {
 	private:
 		std::vector<Value> _notFound;
 		std::string Payload();
 	public:
 		NotFound(std::vector<Value> notFound);
+		static NotFound* Parse(std::string from);
 	};
 
 	class Unknown : public Reply
@@ -235,6 +251,7 @@ namespace Replies {
 		std::string Payload();
 	public:
 		Unknown(std::string command);
+		static Unknown* Parse(std::string from);
 	};
 
 	class UnknownVersion : public Reply
@@ -244,6 +261,7 @@ namespace Replies {
 		std::string Payload();
 	public:
 		UnknownVersion(std::vector<std::string> versions);
+		static UnknownVersion* Parse(std::string from);
 	};
 
 	class Internal : public Reply
@@ -253,5 +271,14 @@ namespace Replies {
 		std::string Payload();
 	public:
 		Internal(std::string details);
+		static Internal* Parse(std::string from);
 	};
 }
+
+
+class MessageFactory {
+public:
+	Command* Command(std::string from);
+
+	Reply* Reply(std::string from);
+};

@@ -2,6 +2,7 @@
 
 #include <numeric>
 #include <functional>
+#include <regex>
 
 template <typename T> std::string join(std::vector<T> vector, std::string separator, std::function<std::string(T)> f, bool space = true) {
 	std::string accumulator = "";
@@ -13,6 +14,38 @@ template <typename T> std::string join(std::vector<T> vector, std::string separa
 	if (space && accumulator.empty()) { accumulator.pop_back(); }
 
 	return accumulator;
+}
+
+template <typename T, typename U> T parseEnum(U from, std::map<T, U> Attributes) {
+	for (auto&& item : Attributes) {
+		if (item.second == from) {
+			return item.first;
+		}
+	}
+
+	throw "Enum value not found";
+}
+
+std::string trim(const std::string& s)
+{
+	auto wsfront = std::find_if_not(s.begin(), s.end(), [](int c) {return std::isspace(c); });
+	auto wsback = std::find_if_not(s.rbegin(), s.rend(), [](int c) {return std::isspace(c); }).base();
+	return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
+}
+
+std::vector<std::string> split(const std::string& s, std::string at) {
+	std::vector<std::string> v = std::vector<std::string>{};
+
+	std::string rest = s;
+	for (;;) {
+		int found = rest.find_first_of(at);
+		std::string sub = rest.substr(0, found);
+		if (sub.empty()) { break; }
+		v.push_back(trim(sub));
+		if (found == std::string::npos) { break; }
+		rest = rest.substr(found + 1);
+	}
+	return v;
 }
 
 Value::Value(unsigned int light)
@@ -33,6 +66,21 @@ Value::Value(unsigned int light, std::optional<Ring> ring, std::optional<Color> 
 	_ring = ring;
 	_color = color;
 	_value = value;
+}
+
+Value::Value(std::string from) {
+	std::smatch valueMatch;
+
+
+	if (!std::regex_match(from, valueMatch, std::regex("^(\\d*)(?: +(\\w*)(?: +(\\w*)(?: +(\\d*(?:\\.\\d*)?))?)?)?(?:.*)"))) {
+		throw "could not parse values";
+	}
+
+	auto tmp = valueMatch[1].str();
+	_light = std::stoul(valueMatch[1].str());
+	_ring = valueMatch[2].matched ? std::optional(parseEnum<Ring, std::string>(valueMatch[2].str(), RingAttributes)) : std::nullopt;
+	_color = valueMatch[3].matched ? std::optional(parseEnum<Color, std::string>(valueMatch[3].str(), ColorAttributes)) : std::nullopt;
+	_value = valueMatch[4].matched ? std::optional(std::stod(valueMatch[4].str())) : std::nullopt;
 }
 
 std::string Value::ToString() {
@@ -75,6 +123,11 @@ std::string Reply::Head() {
 Commands::Connect::Connect() {
 	_cmd = Cmd::CONNECT;
 	_versions = { "1" };
+}
+
+Commands::Connect::Connect(std::vector<std::string> versions) : Connect() {
+	_versions = versions;
+
 }
 
 
@@ -207,3 +260,181 @@ std::string Replies::Internal::Payload() {
 	return _details;
 }
 
+
+Reply* MessageFactory::Reply(std::string from) {
+	std::smatch statusCodeMatch;
+
+	if (!std::regex_match(from, statusCodeMatch, std::regex("^([0-9]{3})(?: *: *(.*))?"))) {
+		throw "could not find StatusCode";
+	}
+
+	::StatusCode statusCode = parseEnum<::StatusCode, unsigned int>(std::stoul(statusCodeMatch[1].str()), StatusCodeAttributes);
+
+	auto rest = trim(statusCodeMatch[2].str());
+
+	switch (statusCode) {
+	case StatusCode::DONE:
+		return Replies::Done::Parse();
+		break;
+	case StatusCode::VERSION:
+		return Replies::Version::Parse(rest);
+		break;
+	case StatusCode::CONFIG:
+		return Replies::Config::Parse(rest);
+		break;
+	case StatusCode::STATUS_DIFFERENCE:
+		return Replies::StatusDifference::Parse(rest);
+		break;
+	case StatusCode::STATUS:
+		return Replies::Status::Parse(rest);
+		break;
+	case StatusCode::NOT_FOUND:
+		return Replies::NotFound::Parse(rest);
+		break;
+	case StatusCode::UNKNOWN:
+		return Replies::Unknown::Parse(rest);
+		break;
+	case StatusCode::UNKNOWN_VERSION:
+		return Replies::UnknownVersion::Parse(rest);
+		break;
+	case StatusCode::INTERNAL:
+		return Replies::Internal::Parse(rest);
+		break;
+	default:
+		throw;
+	}
+}
+
+
+Command* MessageFactory::Command(std::string from) {
+	std::smatch cmdMatch;
+
+	if (!std::regex_match(from, cmdMatch, std::regex("^([a-z]*)(?: *: *(.*))?"))) {
+		throw "could not find command";
+	}
+
+	::Cmd cmd = parseEnum<::Cmd, std::string>(cmdMatch[1].str(), CmdAttributes);
+
+	auto rest = trim(cmdMatch[2].str());
+
+	switch (cmd) {
+	case Cmd::CONNECT:
+		return Commands::Connect::Parse(rest);
+		break;
+	case Cmd::VERSION:
+		return Commands::Version::Parse();
+		break;
+	case Cmd::CONFIG:
+		return Commands::Config::Parse();
+		break;
+	case Cmd::SET:
+		return Commands::Set::Parse(rest);
+		break;
+	case Cmd::RESET:
+		return Commands::Reset::Parse(rest);
+		break;
+	case Cmd::STATUS:
+		return Commands::Status::Parse(rest);
+	default:
+		throw;
+	}
+}
+
+Replies::Done* Replies::Done::Parse() {
+	return new Done();
+}
+
+Replies::Version* Replies::Version::Parse(std::string from) {
+	return new Version(from);
+}
+
+Replies::Config* Replies::Config::Parse(std::string from) {
+	return new Config(std::stoul(from));
+}
+
+Replies::StatusDifference* Replies::StatusDifference::Parse(std::string from) {
+	std::vector<std::string> splitFrom = split(from, ";");
+	std::vector<Value> values;
+	for (auto& value : splitFrom) {
+		values.push_back(Value(value));
+	}
+
+	return new Replies::StatusDifference(values);
+}
+
+Replies::Status* Replies::Status::Parse(std::string from) {
+	std::vector<std::string> splitFrom = split(from, ";");
+	std::vector<Value> values;
+	for (auto& value : splitFrom) {
+		values.push_back(Value(value));
+	}
+
+	return new Replies::Status(values);
+}
+
+Replies::NotFound* Replies::NotFound::Parse(std::string from) {
+	std::vector<std::string> splitFrom = split(from, ";");
+	std::vector<Value> values;
+	for (auto& value : splitFrom) {
+		values.push_back(Value(value));
+	}
+
+	return new Replies::NotFound(values);
+}
+
+Replies::Unknown* Replies::Unknown::Parse(std::string from) {
+	return new Unknown(from);
+}
+
+Replies::UnknownVersion* Replies::UnknownVersion::Parse(std::string from) {
+	return new Replies::UnknownVersion(split(from, ";"));
+}
+
+Replies::Internal* Replies::Internal::Parse(std::string from) {
+	return new Internal(from);
+}
+
+
+
+Commands::Version* Commands::Version::Parse() {
+	return new Commands::Version();
+}
+
+Commands::Connect* Commands::Connect::Parse(std::string from) {
+	return new Commands::Connect(split(from, ";"));
+
+}
+
+Commands::Config* Commands::Config::Parse() {
+	return new Commands::Config();
+}
+
+Commands::Set* Commands::Set::Parse(std::string from) {
+	std::vector<std::string> splitFrom = split(from, ";");
+	std::vector<Value> values;
+	for (auto& value : splitFrom) {
+		values.push_back(Value(value));
+	}
+
+	return new Commands::Set(values);
+}
+
+Commands::Reset* Commands::Reset::Parse(std::string from) {
+	std::vector<std::string> splitFrom = split(from, ";");
+	std::vector<unsigned int> values;
+	for (auto& value : splitFrom) {
+		values.push_back(std::stoul(value));
+	}
+
+	return new Commands::Reset(values);
+}
+
+Commands::Status* Commands::Status::Parse(std::string from) {
+	std::vector<std::string> splitFrom = split(from, ";");
+	std::vector<unsigned int> values;
+	for (auto& value : splitFrom) {
+		values.push_back(std::stoul(value));
+	}
+
+	return new Commands::Status(values);
+}

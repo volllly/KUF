@@ -37,41 +37,28 @@ int main(int argc, char* argv[])
 
 	if (res)
 	{
-		std::cout << Commands::Connect().ToString();
-		std::cout << Commands::Version().ToString();
-		std::cout << Commands::Set(std::vector{ 
-			Value(1, Ring::MAIN, Color::RED, 66.6),
-			Value(1, Ring::MAIN, Color::GREEN, 10),
-			Value(1, Ring::MAIN, Color::BLUE, 23.5),
-			}).ToString();
-		std::cout << Commands::Reset(std::vector<unsigned int>{ 1, 2, 3, 4 }).ToString();
-		std::cout << Commands::Status(std::vector<unsigned int>{ 1, 2, 3, 4 }).ToString();
-		std::cout << Commands::Config().ToString();
+		MessageFactory messageFactory = MessageFactory();
+		std::cout << messageFactory.Reply("200")->ToString();
+		std::cout << messageFactory.Reply("210: 1")->ToString();
+		std::cout << messageFactory.Reply("211: 3")->ToString();
+		std::cout << messageFactory.Reply("202: 1 main red 10.6; 1 main green 1.6")->ToString();
+		std::cout << messageFactory.Reply("203: 1 main blue 10.6; 1 main uv 1.6;")->ToString();
+		std::cout << messageFactory.Reply("300: 3")->ToString();
+		std::cout << messageFactory.Reply("300: 3 main")->ToString();
+		std::cout << messageFactory.Reply("300: 3 main red")->ToString();
+		std::cout << messageFactory.Reply("400: unknown command")->ToString();
+		std::cout << messageFactory.Reply("401: 1; 2; 3;")->ToString();
+		std::cout << messageFactory.Reply("500: error message")->ToString();
 
-		std::cout << endl;
-
-		std::cout << Replies::Done().ToString();
-		std::cout << Replies::Version("1").ToString();
-		std::cout << Replies::Config(1).ToString();
-		std::cout << Replies::StatusDifference(std::vector{
-			Value(1, Ring::MAIN, Color::RED, 66.6),
-			Value(1, Ring::MAIN, Color::GREEN, 10),
-			Value(1, Ring::MAIN, Color::BLUE, 23.5),
-			}).ToString();
-		std::cout << Replies::Status(std::vector{
-			Value(1, Ring::MAIN, Color::RED, 66.6),
-			Value(1, Ring::MAIN, Color::GREEN, 10),
-			Value(1, Ring::MAIN, Color::DIMM, 23.5),
-			}).ToString();
-		std::cout << Replies::NotFound(std::vector{
-			Value(1, Ring::MAIN, Color::RED),
-			Value(1, Ring::MAIN),
-			Value(1),
-			}).ToString();
-		std::cout << Replies::Unknown("unknown: payload").ToString();
-		std::cout << Replies::UnknownVersion(std::vector{ string("2"), string("3"), string("4") }).ToString();
-		std::cout << Replies::Internal("some server error").ToString();
-
+		std::cout << messageFactory.Command("connect: 1; 2; 3;")->ToString();
+		std::cout << messageFactory.Command("version")->ToString();
+		std::cout << messageFactory.Command("status: 1; 3")->ToString();
+		std::cout << messageFactory.Command("status: 1")->ToString();
+		std::cout << messageFactory.Command("set: 1 main red 10.6; 1 main green 1.6")->ToString();
+		std::cout << messageFactory.Command("set: 1 main blue 10.6; 1 main uv 1.6;")->ToString();
+		std::cout << messageFactory.Command("reset: 3")->ToString();
+		std::cout << messageFactory.Command("reset: 3; 2")->ToString();
+		std::cout << messageFactory.Command("config")->ToString();
 
 		char inputstr[100];
 
