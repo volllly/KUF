@@ -98,6 +98,12 @@ public:
 	Value(std::string);
 
 	std::string ToString();
+
+	unsigned int GetLight();
+	std::optional<Ring> GetRing();
+	std::optional<Color> GetColor();
+	std::optional<double> GetValue();
+	void SetValue(double);
 };
 
 class Message {

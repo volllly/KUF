@@ -160,6 +160,7 @@
   <ItemGroup>
     <ClCompile Include="CallbackHandler.cpp" />
     <ClCompile Include="Client.cpp" />
+    <ClCompile Include="Interface.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Network\Network.vcxproj">
@@ -171,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CallbackHandler.h" />
+    <ClInclude Include="Interface.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

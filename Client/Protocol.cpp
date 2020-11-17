@@ -91,6 +91,14 @@ std::string Value::ToString() {
 }
 
 
+unsigned int Value::GetLight() { return _light; }
+std::optional<Ring> Value::GetRing() { return _ring; }
+std::optional<Color> Value::GetColor() { return _color; }
+std::optional<double> Value::GetValue() { return _value; }
+void Value::SetValue(double value) {
+	_value = std::make_optional(value);
+};
+
 std::string Message::Payload() {
 	return "";
 }
