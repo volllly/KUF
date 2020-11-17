@@ -6,28 +6,11 @@
 #include <io.h>
 #include <fcntl.h>
 
-Binding::Binding(std::shared_ptr<void> data, std::function<void(std::shared_ptr<void>)> handler) {
-	_data = data;
-	_handler = handler;
-}
-
-std::shared_ptr<void> Binding::Get() {
-	return _data;
-}
-
-void Binding::Update() {
-	_handler(_data);
-}
-
-Widget::Widget(std::optional<::Binding> binding, std::optional<std::string> title, BorderSize border) {
-	_binding = binding;
+Widget::Widget(std::shared_ptr<std::string> title, BorderSize border) {
 	_border = border;
 	_title = title;
 }
 
-Binding* Widget::Binding() {
-	return &_binding.value();
-}
 
 void Widget::DrawBorder(short int x, short int y) {
 	if (_border != BorderSize::None) {
@@ -57,16 +40,15 @@ void Widget::DrawBorder(short int x, short int y) {
 		std::cout << symbols.br;
 	}
 
-	if (_title.has_value()) {
-		auto tmp = _title.value();
+	if (_title) {
 		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x + 1, y });
-		std::cout << _title.value();
+		std::cout << *_title.get();
 	}
 }
 
 void Widget::Draw(short int x, short int y) {
 	DrawBorder(x, y);
-	auto margin = (_border != BorderSize::None || _title.has_value() ? 1 : 0);
+	auto margin = (_border != BorderSize::None || _title ? 1 : 0);
 	DrawContent(x + margin, y + margin);
 }
 unsigned int Widget::InnerWidth() {
@@ -77,19 +59,15 @@ unsigned int Widget::InnerHeight() {
 }
 
 unsigned int Widget::Width() {
-	return InnerWidth() + (_border != BorderSize::None || _title.has_value() ? 2 : 0);
+	return InnerWidth() + (_border != BorderSize::None || _title ? 2 : 0);
 }
 
 unsigned int Widget::Height() {
-	return InnerHeight() + (_border != BorderSize::None || _title.has_value() ? 2 : 0);
+	return InnerHeight() + (_border != BorderSize::None || _title ? 2 : 0);
 }
 
 Interface::Interface(std::shared_ptr<Widget> widget) {
 	_widget = widget;
-}
-
-void Interface::Input(INPUT_RECORD input) {
-	_widget.get()->Input(input);
 }
 
 void Interface::Draw() {
@@ -115,13 +93,13 @@ void Interface::Draw() {
 	_widget.get()->Draw(x, y);
 }
 
-Row::Row(std::vector<std::shared_ptr<Widget>> widgets, std::optional<std::string> title, BorderSize border) : Container(title, border) {
+Row::Row(std::shared_ptr<std::vector<std::shared_ptr<Widget>>> widgets, std::shared_ptr<std::string> title, BorderSize border) : Container(title, border) {
 	_widgets = widgets;
 }
 
 void Row::DrawContent(short int x, short int y) {
 	unsigned int width = x;
-	for (auto& widget : _widgets) {
+	for (auto& widget : *_widgets.get()) {
 		widget.get()->Draw(width, y);
 		width += widget.get()->Width();
 	}
@@ -129,7 +107,7 @@ void Row::DrawContent(short int x, short int y) {
 
 unsigned int Row::InnerWidth() {
 	unsigned int width = 0;
-	for (auto& widget : _widgets) {
+	for (auto& widget : *_widgets) {
 		width += widget.get()->Width();
 	}
 
@@ -138,7 +116,7 @@ unsigned int Row::InnerWidth() {
 
 unsigned int Row::InnerHeight() {
 	unsigned int height = 0;
-	for (auto& widget : _widgets) {
+	for (auto& widget : *_widgets.get()) {
 		height = max(widget.get()->Height(), height);
 	}
 
@@ -147,13 +125,13 @@ unsigned int Row::InnerHeight() {
 
 
 
-Column::Column(std::vector<std::shared_ptr<Widget>> widgets, std::optional<std::string> title, BorderSize border) : Container(title, border) {
+Column::Column(std::shared_ptr<std::vector<std::shared_ptr<Widget>>> widgets, std::shared_ptr<std::string> title, BorderSize border) : Container(title, border) {
 	_widgets = widgets;
 }
 
 void Column::DrawContent(short int x, short int y) {
 	unsigned int height = y;
-	for (auto& widget : _widgets) {
+	for (auto& widget : *_widgets.get()) {
 		widget.get()->Draw(x, height);
 		height += widget.get()->Height();
 	}
@@ -161,7 +139,7 @@ void Column::DrawContent(short int x, short int y) {
 
 unsigned int Column::InnerHeight() {
 	unsigned int height = 0;
-	for (auto& widget : _widgets) {
+	for (auto& widget : *_widgets.get()) {
 		height += widget.get()->Height();
 	}
 
@@ -170,7 +148,7 @@ unsigned int Column::InnerHeight() {
 
 unsigned int Column::InnerWidth() {
 	unsigned int width = 0;
-	for (auto& widget : _widgets) {
+	for (auto& widget : *_widgets.get()) {
 		width = max(widget.get()->Width(), width);
 	}
 
@@ -178,9 +156,10 @@ unsigned int Column::InnerWidth() {
 }
 
 
-TextBox::TextBox(::Binding binding, std::optional<std::string> title, BorderSize border, unsigned int width, unsigned int height) : Widget(binding, title, border) {
+TextBox::TextBox(std::shared_ptr<std::string> text, std::shared_ptr<std::string> title, BorderSize border, unsigned int width, unsigned int height) : Widget(title, border) {
 	_width = width;
 	_height = height;
+	_text = text;
 }
 
 
@@ -195,7 +174,7 @@ void TextBox::DrawContent(short int x, short int y) {
 	_x = x;
 	_y = y;
 
-	std::string text = *(std::string*)_binding.value().Get().get();
+	std::string text = *_text.get();
 
 	std::istringstream iss(text);
 	std::string line;
@@ -218,6 +197,10 @@ void TextBox::DrawContent(short int x, short int y) {
 	}
 }
 
+std::shared_ptr<std::string> TextBox::Text() {
+	return _text;
+}
+
 void TextBox::Focus() {
 	CONSOLE_CURSOR_INFO cursor = {
 		1,
@@ -228,15 +211,19 @@ void TextBox::Focus() {
 
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ (short)_x, (short)_y });
 
-	std::cin >> *(std::string*)_binding.value().Get().get();
+	std::string line;
+	std::getline(std::cin, line);
+
+	*_text.get() = line;
 
 }
 
-Fader::Fader(::Binding binding, std::optional<std::string> title, BorderSize border, unsigned int width, unsigned int height, double max) : Widget(binding, title, border) {
+Fader::Fader(std::shared_ptr<double> value, std::shared_ptr<std::string> title, BorderSize border, unsigned int width, unsigned int height, double max) : Widget(title, border) {
 	_width = width;
 	_height = height;
 	_max = max;
 	_title = title;
+	_value = value;
 }
 
 unsigned int Fader::InnerHeight() {
@@ -258,7 +245,7 @@ const std::string FaderChars[] = {
 };
 
 void Fader::DrawContent(short int x, short int y) {
-	double value = *(double*)_binding.value().Get().get();
+	double value = *_value.get();
 
 	short int center = x + ((short)InnerWidth() - 1) / 2;
 	short width = (short)InnerWidth() - 2;
@@ -289,4 +276,8 @@ void Fader::DrawContent(short int x, short int y) {
 			std::cout << FaderChars[i % 8];
 		}
 	}
+}
+
+std::shared_ptr<double> Fader::Value() {
+	return _value;
 }

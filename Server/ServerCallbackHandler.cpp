@@ -61,12 +61,19 @@ void ServerCallbackHandler::ConnectionLost()
 void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
 {
   // here we rely on the fact that the data is a string!
-    std::string sent = std::string("211: 1\r\n");
   std::cout << "got new data >>" << data << "<< len " << len << std::endl;
 
   // just send this back to the client
+  std::string strdata = std::string(data);
+
   if (myComm) {
-      //std::cout << "sending >>" << data << "<< len " << len << std::endl;
-      myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
+      if (strdata.find("config") != std::string::npos) {
+        std::string sent = std::string("211: 1\r\n");
+        myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
+      } else {
+          strdata = strdata.substr(strdata.find(":") + 1, -1);
+          std::string sent = std::string("203:" + strdata);
+          myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
+      }
   }
 }

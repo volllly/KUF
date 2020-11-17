@@ -113,10 +113,6 @@ protected:
 public:
 	virtual std::string ToString();
 	virtual std::string Payload();
-
-	~Message() {
-		std::cout << "deconstructed";
-	}
 };
 
 class Command : public Message {

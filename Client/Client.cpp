@@ -51,18 +51,16 @@ int main(int argc, char* argv[])
 
 	std::vector<std::vector<std::shared_ptr<double>>*> channels = std::vector<std::vector<std::shared_ptr<double>>*>{};
 
-	std::shared_ptr<TextBox> status = std::make_shared<TextBox>(TextBox(Binding(std::make_shared<std::string>(std::string("> connected to ") + servername), [](auto data) {
-	}), std::make_optional<std::string>("log"), BorderSize::Double, 86, 6));
+	std::shared_ptr<TextBox> status = std::make_shared<TextBox>(TextBox(std::make_shared<std::string>(std::string("> connected to ") + servername), std::make_shared<std::string>("log"), BorderSize::Double, 86, 6));
 
 
-	std::shared_ptr<TextBox> input = std::make_shared<TextBox>(TextBox(Binding(std::make_shared<std::string>(std::string("")), [](auto data) {
-	}), std::nullopt, BorderSize::Single, 86, 1));
+	std::shared_ptr<TextBox> input = std::make_shared<TextBox>(TextBox(std::make_shared<std::string>(std::string("")), nullptr, BorderSize::Single, 86, 1));
 
-	std::vector<std::shared_ptr<Widget>> rings = std::vector<std::shared_ptr<Widget>> {
+	std::shared_ptr<std::vector<std::shared_ptr<Widget>>> rings = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
 		status,
 		input
-	};
-	Column col = Column(rings, std::nullopt, BorderSize::None);
+	});
+	Column col = Column(rings, nullptr, BorderSize::None);
 
 	Interface tui = Interface(std::shared_ptr<Column>(&col));
 
@@ -85,9 +83,9 @@ int main(int argc, char* argv[])
 		if (configured) {
 			input.get()->Focus();
 
-			std::string read = *(std::string*)input.get()->Binding()->Get().get();
+			std::string read = *(std::string*)input.get()->Text().get();
 
-			((std::string*)status.get()->Binding()->Get().get())->append("\n> " + read);
+			((std::string*)status.get()->Text().get())->append("\n> " + read);
 
 			if (read == "quit") {
 				comm.Disconnect();
@@ -101,6 +99,9 @@ int main(int argc, char* argv[])
 			delete command;
 		} else {
 			send = Commands::Config().ToString();
+
+
+			((std::string*)status.get()->Text().get())->append("\n> " + send.substr(0, send.length() - 2));
 		}
 		comm.WriteToPartner(send.c_str(), send.length());
 		
@@ -117,7 +118,7 @@ int main(int argc, char* argv[])
 				continue;
 			}
 			reply = messageFactory.Reply(*receiver.get());
-			((std::string*)status.get()->Binding()->Get().get())->append("\n> " + reply->ToString().substr(0, reply->ToString().length() - 2));
+			((std::string*)status.get()->Text().get())->append("\n> " + reply->ToString().substr(0, reply->ToString().length() - 2));
 			switch (reply->StatusCode()) {
 				case StatusCode::STATUS:
 				case StatusCode::STATUS_DIFFERENCE:
@@ -125,7 +126,7 @@ int main(int argc, char* argv[])
 					std::vector<Value> values = ((Replies::StatusDifference*)reply)->GetStatus();
 
 					for (auto& value : values) {
-						*(channels[value.GetLight()]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())).get()) = value.GetValue().value();
+						*(channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())).get()) = value.GetValue().value();
 					}
 					break;
 				}
@@ -136,56 +137,39 @@ int main(int argc, char* argv[])
 							channel->push_back(std::make_shared<double>(0));
 						}
 						channels.push_back(channel);
+					}
 
-						rings.insert(rings.begin(), std::make_shared<Row>(Row(std::vector<std::shared_ptr<Widget>>{
-							std::make_shared<Row>(Row(std::vector<std::shared_ptr<Widget>> {
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(14), [](auto data) {}), std::make_optional<std::string>("D"), BorderSize::None, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(15), [](auto data) {}), std::make_optional<std::string>("R"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(16), [](auto data) {}), std::make_optional<std::string>("G"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(17), [](auto data) {}), std::make_optional<std::string>("B"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(18), [](auto data) {}), std::make_optional<std::string>("W"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(19), [](auto data) {}), std::make_optional<std::string>("A"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(20), [](auto data) {}), std::make_optional<std::string>("U"), BorderSize::Single, 4, 6, 100)),
-						}, std::make_optional<std::string>("ring2"), BorderSize::Double)),
+					const std::string names[] = { "D", "R", "G", "B", "W", "A", "U" };
 
-							std::make_shared<Row>(Row(std::vector<std::shared_ptr<Widget>> {
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(21), [](auto data) {}), std::make_optional<std::string>("D"), BorderSize::None, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(22), [](auto data) {}), std::make_optional<std::string>("R"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(23), [](auto data) {}), std::make_optional<std::string>("G"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(24), [](auto data) {}), std::make_optional<std::string>("B"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(25), [](auto data) {}), std::make_optional<std::string>("W"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(26), [](auto data) {}), std::make_optional<std::string>("A"), BorderSize::Single, 4, 6, 100)),
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(27), [](auto data) {}), std::make_optional<std::string>("U"), BorderSize::Single, 4, 6, 100)),
-							}, std::make_optional<std::string>("ring3"), BorderSize::Double)),
-						}, std::nullopt, BorderSize::None)));
+					for (int i = ((Replies::Config*)reply)->GetConfig() - 1; i >= 0; i--) {
+						std::shared_ptr<std::vector<std::shared_ptr<Widget>>> main = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
+						std::shared_ptr<std::vector<std::shared_ptr<Widget>>> ring1 = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
+						std::shared_ptr<std::vector<std::shared_ptr<Widget>>> ring2 = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
+						std::shared_ptr<std::vector<std::shared_ptr<Widget>>> ring3 = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
 
-						rings.insert(rings.begin(), std::make_shared<Row>(Row(std::vector<std::shared_ptr<Widget>> {
-							std::make_shared<Row>(Row(std::vector<std::shared_ptr<Widget>> {
-								std::make_shared<Fader>(Fader(Binding(channels[i]->at(0), [](auto data) {}), std::make_optional<std::string>("D"), BorderSize::None, 4, 6, 100)),
-									std::make_shared<Fader>(Fader(Binding(channels[i]->at(1), [](auto data) {}), std::make_optional<std::string>("R"), BorderSize::Single, 4, 6, 100)),
-									std::make_shared<Fader>(Fader(Binding(channels[i]->at(2), [](auto data) {}), std::make_optional<std::string>("G"), BorderSize::Single, 4, 6, 100)),
-									std::make_shared<Fader>(Fader(Binding(channels[i]->at(3), [](auto data) {}), std::make_optional<std::string>("B"), BorderSize::Single, 4, 6, 100)),
-									std::make_shared<Fader>(Fader(Binding(channels[i]->at(4), [](auto data) {}), std::make_optional<std::string>("W"), BorderSize::Single, 4, 6, 100)),
-									std::make_shared<Fader>(Fader(Binding(channels[i]->at(5), [](auto data) {}), std::make_optional<std::string>("A"), BorderSize::Single, 4, 6, 100)),
-									std::make_shared<Fader>(Fader(Binding(channels[i]->at(6), [](auto data) {}), std::make_optional<std::string>("U"), BorderSize::Single, 4, 6, 100)),
-							}, std::make_optional<std::string>("main"), BorderSize::Double)),
+						for (int j = 0; j < 7; j++) {
+							main.get()->push_back( std::make_shared<Fader>(Fader(channels[i]->at(j        ), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::Dashed, 4, 6, 100)));
+							ring1.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7    ), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::Dashed, 4, 6, 100)));
+							ring2.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7 * 2), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::Dashed, 4, 6, 100)));
+							ring3.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7 * 3), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::Dashed, 4, 6, 100)));
+						}
 
-								std::make_shared<Row>(Row(std::vector<std::shared_ptr<Widget>> {
-									std::make_shared<Fader>(Fader(Binding(channels[i]->at(7), [](auto data) {}), std::make_optional<std::string>("D"), BorderSize::None, 4, 6, 100)),
-										std::make_shared<Fader>(Fader(Binding(channels[i]->at(8), [](auto data) {}), std::make_optional<std::string>("R"), BorderSize::Single, 4, 6, 100)),
-										std::make_shared<Fader>(Fader(Binding(channels[i]->at(9), [](auto data) {}), std::make_optional<std::string>("G"), BorderSize::Single, 4, 6, 100)),
-										std::make_shared<Fader>(Fader(Binding(channels[i]->at(10), [](auto data) {}), std::make_optional<std::string>("B"), BorderSize::Single, 4, 6, 100)),
-										std::make_shared<Fader>(Fader(Binding(channels[i]->at(11), [](auto data) {}), std::make_optional<std::string>("W"), BorderSize::Single, 4, 6, 100)),
-										std::make_shared<Fader>(Fader(Binding(channels[i]->at(12), [](auto data) {}), std::make_optional<std::string>("A"), BorderSize::Single, 4, 6, 100)),
-										std::make_shared<Fader>(Fader(Binding(channels[i]->at(13), [](auto data) {}), std::make_optional<std::string>("U"), BorderSize::Single, 4, 6, 100)),
-								}, std::make_optional<std::string>("ring1"), BorderSize::Double)),
-						}, std::nullopt, BorderSize::None)));
+						rings.get()->insert(rings.get()->begin(), std::make_shared<Row>(Row(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
+							std::make_shared<Row>(Row(ring2, std::make_shared<std::string>("ring2"), BorderSize::Double)),
+								std::make_shared<Row>(Row(ring3, std::make_shared<std::string>("ring3"), BorderSize::Double)),
+						}), nullptr, BorderSize::None)));
+
+
+						rings.get()->insert(rings.get()->begin(), std::make_shared<Row>(Row(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
+							std::make_shared<Row>(Row(main, std::make_shared<std::string>("main"), BorderSize::Double)),
+								std::make_shared<Row>(Row(ring1, std::make_shared<std::string>("ring1"), BorderSize::Double))
+						}), nullptr, BorderSize::None)));
 					}
 					configured = true;
 					break;
 			}
 		}
-		((std::string*)input.get()->Binding()->Get().get())->clear();
+		((std::string*)input.get()->Text().get())->clear();
 	}
 
 	comm.Disconnect();

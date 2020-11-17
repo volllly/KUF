@@ -76,7 +76,6 @@ Value::Value(std::string from) {
 		throw "could not parse values";
 	}
 
-	auto tmp = valueMatch[1].str();
 	_light = std::stoul(valueMatch[1].str());
 	_ring = valueMatch[2].matched ? std::optional(parseEnum<Ring, std::string>(valueMatch[2].str(), RingAttributes)) : std::nullopt;
 	_color = valueMatch[3].matched ? std::optional(parseEnum<Color, std::string>(valueMatch[3].str(), ColorAttributes)) : std::nullopt;
