@@ -1,3 +1,2 @@
 ﻿  Client.cpp
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Client.cpp(157,14): warning C4834: discarding return value of function with 'nodiscard' attribute
   Client.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Client.exe

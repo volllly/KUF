@@ -2,8 +2,10 @@
 //
 
 #include <iostream>
+#define SHOWMESSAGE
 
 #include "ServerCallbackHandler.h"
+
 
 int main()
 {

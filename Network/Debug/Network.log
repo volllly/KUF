@@ -1,2 +1,5 @@
-﻿  TCPLayer.cpp
+﻿  Communication.cpp
+  OS_depend.cpp
+  TCPLayer.cpp
+  Generating Code...
   Network.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Network.lib

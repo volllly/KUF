@@ -17,7 +17,7 @@ ServerCallbackHandler::~ServerCallbackHandler()
 void ServerCallbackHandler::NewConnectionCB(const char *hostname)
 {
   std::cout << "got new connection from " << hostname << std::endl;
-  int values[8];
+  /*int values[8];
 
   for (int i = 0; i < 255; ++i)
   {
@@ -50,7 +50,7 @@ void ServerCallbackHandler::NewConnectionCB(const char *hostname)
 
   values[6] = 4;
   values[7] = 0;
-
+  */
 }
 
 void ServerCallbackHandler::ConnectionLost()
@@ -64,6 +64,8 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
   std::cout << "got new data >>" << data << "<< len " << len << std::endl;
 
   // just send this back to the client
-  if (myComm)
-    myComm->WriteToPartner(data, len);
+  if (myComm) {
+      std::cout << "sending >>" << data << "<< len " << len << std::endl;
+      myComm->WriteToPartner(data, len);
+  }
 }

@@ -7,6 +7,8 @@
 
 #include <iostream>
 
+#undef SHOWMESSAGE
+
 using namespace std;
 
 int main(int argc, char* argv[])
@@ -34,7 +36,8 @@ int main(int argc, char* argv[])
 #endif // DEBUG
 
 	}
-	std::shared_ptr<CommCallbacks> callback(new CallbackHandler());
+	std::shared_ptr<std::string> receiver = std::make_shared<std::string>(std::string(""));
+	std::shared_ptr<CommCallbacks> callback(new CallbackHandler(receiver));
 	Communication comm(callback);
 
 	bool res = comm.Connect(servername, serverPort);
@@ -132,29 +135,42 @@ int main(int argc, char* argv[])
 
 	Interface tui = Interface(std::shared_ptr<Column>(&col));
 
+	if (!res) {
+		cerr << "error connecting;" << endl;
+	}
+
 	for (;;) {
 
 		tui.Draw();
 
 		input.get()->Focus();
 
-		std::string* read = (std::string*)input.get()->Binding()->Get().get();
+		std::string read = *(std::string*)input.get()->Binding()->Get().get();
 
-		((std::string*)status.get()->Binding()->Get().get())->append("\n> " + *read);
+		((std::string*)status.get()->Binding()->Get().get())->append("\n> " + read);
 
-		if (*read == "quit") {
+		if (read == "quit") {
 			comm.Disconnect();
 			return 0;
 		}
 
-		comm.WriteToPartner(read->c_str(), read->length() + 1);
-		OS_Sleep(100);
+		comm.WriteToPartner(read.c_str(), read.length() + 1);
+		
+		while (!comm.IsMessagePending()) {
+			__noop();
+		}
 
 		while (comm.IsMessagePending()) {
 			comm.ProcessMessage();
-			//((std::string*)status.get()->Binding()->Get().get())->append("\n> " + *receiver.get());
+			if (receiver.get()->empty()) {
+				while (!comm.IsMessagePending()) {
+					__noop();
+				}
+				continue;
+			}
+			((std::string*)status.get()->Binding()->Get().get())->append("\n> " + *receiver.get());
 		}
-		read->empty();
+		((std::string*)input.get()->Binding()->Get().get())->clear();
 	}
 
 	comm.Disconnect();
