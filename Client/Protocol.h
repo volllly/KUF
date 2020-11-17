@@ -223,6 +223,8 @@ namespace Replies {
 	public:
 		Config(unsigned int lights);
 		static Config* Parse(std::string from);
+		unsigned int GetConfig();
+
 	};
 
 	class StatusDifference : public Reply
@@ -233,6 +235,7 @@ namespace Replies {
 	public:
 		StatusDifference(std::vector<Value> status);
 		static StatusDifference* Parse(std::string from);
+		std::vector<Value> GetStatus();
 	};
 
 	class Status : public StatusDifference {

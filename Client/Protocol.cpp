@@ -213,6 +213,10 @@ std::string Replies::Config::Payload() {
 	return std::to_string(_lights);
 }
 
+unsigned int Replies::Config::GetConfig() {
+	return _lights;
+}
+
 
 Replies::StatusDifference::StatusDifference(std::vector<Value> status) {
 	_statusCode = StatusCode::STATUS_DIFFERENCE;
@@ -223,6 +227,9 @@ std::string Replies::StatusDifference::Payload() {
 	return join<Value>(_status, ";", [](Value value) { return value.ToString(); });
 }
 
+std::vector<Value> Replies::StatusDifference::GetStatus() {
+	return _status;
+}
 
 Replies::Status::Status(std::vector<Value> status) : StatusDifference(status) {
 	_statusCode = StatusCode::STATUS;
@@ -271,8 +278,9 @@ std::string Replies::Internal::Payload() {
 
 Reply* MessageFactory::Reply(std::string from) {
 	std::smatch statusCodeMatch;
+	from= from.substr(0, from.find("\r\n"));
 
-	if (!std::regex_match(from, statusCodeMatch, std::regex("^([0-9]{3})(?: *: *(.*))?"))) {
+	if (!std::regex_match(from, statusCodeMatch, std::regex("([0-9]{3})(?: *: *(.*))?"))) { //^([0-9]{3})(?: *: *(.*))?
 		throw "could not find StatusCode";
 	}
 
@@ -316,6 +324,7 @@ Reply* MessageFactory::Reply(std::string from) {
 
 Command* MessageFactory::Command(std::string from) {
 	std::smatch cmdMatch;
+	from = from.substr(0, from.find("\r\n"));
 
 	if (!std::regex_match(from, cmdMatch, std::regex("^([a-z]*)(?: *: *(.*))?"))) {
 		throw "could not find command";

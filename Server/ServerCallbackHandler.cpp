@@ -61,11 +61,12 @@ void ServerCallbackHandler::ConnectionLost()
 void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
 {
   // here we rely on the fact that the data is a string!
+    std::string sent = std::string("211: 1\r\n");
   std::cout << "got new data >>" << data << "<< len " << len << std::endl;
 
   // just send this back to the client
   if (myComm) {
-      std::cout << "sending >>" << data << "<< len " << len << std::endl;
-      myComm->WriteToPartner(data, len);
+      //std::cout << "sending >>" << data << "<< len " << len << std::endl;
+      myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
   }
 }
