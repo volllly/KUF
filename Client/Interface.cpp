@@ -3,6 +3,9 @@
 #include <iomanip> 
 
 
+#include <io.h>
+#include <fcntl.h>
+
 Binding::Binding(std::shared_ptr<void> data, std::function<void(std::shared_ptr<void>)> handler) {
 	_data = data;
 	_handler = handler;
@@ -90,10 +93,19 @@ void Interface::Input(INPUT_RECORD input) {
 }
 
 void Interface::Draw() {
+	SetConsoleOutputCP(CP_UTF8);
+	SetConsoleCP(CP_UTF8);
 	CONSOLE_SCREEN_BUFFER_INFO info;
 	unsigned short int x = 0, y = 0;
 
 	DWORD written;
+
+	CONSOLE_CURSOR_INFO cursor = {
+		1,
+		false
+	};
+
+	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor);
 
 	if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info)) {
 		FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', info.dwSize.X * info.dwSize.Y, COORD { 0, 0 }, &written);
@@ -180,6 +192,9 @@ unsigned int TextBox::InnerWidth() {
 }
 
 void TextBox::DrawContent(short int x, short int y) {
+	_x = x;
+	_y = y;
+
 	std::string text = *(std::string*)_binding.value().Get().get();
 
 	std::istringstream iss(text);
@@ -197,13 +212,25 @@ void TextBox::DrawContent(short int x, short int y) {
 		lines.push_back(line);
 	}
 	
-	for (unsigned short int i = (unsigned)max((signed)lines.size() - (signed)InnerHeight(), 0); i < lines.size(); i++) {
+	for (unsigned short int i = (unsigned)max((signed)lines.size() - (signed)InnerHeight(), 0); i < (short)lines.size(); i++) {
 		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x, y + i - max((unsigned short int)lines.size() - (unsigned short int)InnerHeight(), 0) });
 		std::cout << lines[i];
 	}
 }
 
+void TextBox::Focus() {
+	CONSOLE_CURSOR_INFO cursor = {
+		1,
+		true
+	};
 
+	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor);
+
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ (short)_x, (short)_y });
+
+	std::cin >> *(std::string*)_binding.value().Get().get();
+
+}
 
 Fader::Fader(::Binding binding, std::optional<std::string> title, BorderSize border, unsigned int width, unsigned int height, double max) : Widget(binding, title, border) {
 	_width = width;
@@ -219,11 +246,15 @@ unsigned int Fader::InnerWidth() {
 	return (unsigned int)max(_width, abs(log10(_max)) + 2);
 }
 
-const char FaderChars[] = {
-	0xB0, //░ 
-	0xB1, //▒
-	0xB2, //▓
-	0xDB, //█
+const std::string FaderChars[] = {
+	u8"▁",
+	u8"▂",
+	u8"▃",
+	u8"▄",
+	u8"▅",
+	u8"▆",
+	u8"▇",
+	u8"█",
 };
 
 void Fader::DrawContent(short int x, short int y) {
@@ -250,12 +281,12 @@ void Fader::DrawContent(short int x, short int y) {
 
 	std::cout << fmt;
 
-	unsigned int bar = (unsigned int)(min(value / _max, 1) * 4 * (InnerHeight() - 3));
+	unsigned int bar = (unsigned int)(min(value / _max, 1) * 8 * (InnerHeight() - 3));
 
 	for (unsigned int i = 0; i < bar; i++) {
-		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ center - (width - 1) / 2, y + (short)InnerHeight() - 3 - ((unsigned short)i / 4) });
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ center - (width - 1) / 2, y + (short)InnerHeight() - 3 - ((unsigned short)i / 8) });
 		for (short j = 0; j < width; j++) {
-			std::cout << FaderChars[i % 4];
+			std::cout << FaderChars[i % 8];
 		}
 	}
 }

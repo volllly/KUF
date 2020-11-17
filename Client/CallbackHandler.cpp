@@ -1,6 +1,7 @@
 #include "CallbackHandler.h"
 #include <iostream>
 
+
 void CallbackHandler::NewConnectionCB(const char *hostname)
 {
   //std::cout << "got new connection from " << hostname << std::endl;
@@ -14,5 +15,5 @@ void CallbackHandler::ConnectionLost()
 void CallbackHandler::DataReceived(const char *data, unsigned len)
 {
   // here we rely on the fact that the data is a string!
-  //std::cout << "got new data >>" << data << "<< len " << len << std::endl;
+  std::cout << "got new data >>" << data << "<< len " << len << std::endl;
 }

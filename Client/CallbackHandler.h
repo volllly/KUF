@@ -5,12 +5,13 @@
 class CallbackHandler : public CommCallbacks
 {
 public:
-  // got connection from host / port
-  virtual void NewConnectionCB(const char *hostname);
+	//CallbackHandler();
 
-  virtual void ConnectionLost();
+	virtual void NewConnectionCB(const char *hostname);
 
-  virtual void DataReceived(const char *data, unsigned len);
+	virtual void ConnectionLost();
+
+	virtual void DataReceived(const char *data, unsigned len);
 
 };
 

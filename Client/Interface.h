@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <windows.h>
 #include <optional>
 #include <functional>
@@ -21,35 +21,53 @@ public:
 
 enum class BorderSize {
 	None,
+	Dotted,
+	Dashed,
 	Single,
 	Double
 };
 
 const struct BorderSymbols {
-	char tl;
-	char tr;
-	char h;
-	char v;
-	char bl;
-	char br;
+	std::string tl;
+	std::string tr;
+	std::string h;
+	std::string v;
+	std::string bl;
+	std::string br;
 };
 
 const std::map<BorderSize, BorderSymbols> BorderAttributes = {
 	{BorderSize::Single, BorderSymbols {
-		(char)0xDA,
-		(char)0xBF,
-		(char)0xC4,
-		(char)0xB3,
-		(char)0xC0,
-		(char)0xD9,
+		u8"┌",
+		u8"┐",
+		u8"─",
+		u8"│",
+		u8"└",
+		u8"┘",
+	}},
+	{BorderSize::Dotted, BorderSymbols {
+		u8"┌",
+		u8"┐",
+		u8"┈",
+		u8"┊",
+		u8"└",
+		u8"┘",
+	}},
+	{BorderSize::Dashed, BorderSymbols {
+		u8"┌",
+		u8"┐",
+		u8"┄",
+		u8"┆",
+		u8"└",
+		u8"┘",
 	}},
 	{BorderSize::Double, BorderSymbols {
-		(char)0xC9,
-		(char)0xBB,
-		(char)0xCD,
-		(char)0xBA,
-		(char)0xC8,
-		(char)0xBC,
+		u8"╔",
+		u8"╗",
+		u8"═",
+		u8"║",
+		u8"╚",
+		u8"╝",
 	}}
 };
 
@@ -76,6 +94,9 @@ public:
 	virtual void Input(INPUT_RECORD input) {}
 
 	void Draw(short int x, short int y);
+
+	virtual void Focus() {}
+
 };
 
 
@@ -123,12 +144,16 @@ class TextBox : public Widget {
 private:
 	unsigned int _width;
 	unsigned int _height;
+	int _x = 0;
+	int _y = 0;
 
 	unsigned int InnerHeight();
 	unsigned int InnerWidth();
 	void DrawContent(short int x, short int y);
 public:
 	TextBox(::Binding binding, std::optional<std::string> title, BorderSize border, unsigned int width, unsigned int height);
+
+	void Focus();
 };
 
 class Fader : public Widget {

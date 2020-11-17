@@ -6,10 +6,14 @@
 #include "Interface.h"
 
 #include <iostream>
+
 using namespace std;
 
 int main(int argc, char* argv[])
 {
+	SetConsoleOutputCP(CP_UTF8);
+	SetConsoleCP(CP_UTF8);
+
 	unsigned short serverPort = 8000;
 	const char* servername = nullptr;
 
@@ -30,14 +34,10 @@ int main(int argc, char* argv[])
 #endif // DEBUG
 
 	}
-
 	std::shared_ptr<CommCallbacks> callback(new CallbackHandler());
 	Communication comm(callback);
 
 	bool res = comm.Connect(servername, serverPort);
-
-	std::shared_ptr<TextBox> status = std::make_shared<TextBox>(TextBox(Binding(std::make_shared<std::string>(std::string("> connected to ") + servername), [](auto data) {
-	}), std::make_optional<std::string>("log"), BorderSize::Double, 86, 6));
 
 	std::vector<std::vector<std::shared_ptr<double>>> channels = std::vector<std::vector<std::shared_ptr<double>>>{
 		std::vector<std::shared_ptr<double>> {
@@ -75,6 +75,13 @@ int main(int argc, char* argv[])
 		}
 	};
 
+
+	std::shared_ptr<TextBox> status = std::make_shared<TextBox>(TextBox(Binding(std::make_shared<std::string>(std::string("> connected to ") + servername), [](auto data) {
+	}), std::make_optional<std::string>("log"), BorderSize::Double, 86, 6));
+
+
+	std::shared_ptr<TextBox> input = std::make_shared<TextBox>(TextBox(Binding(std::make_shared<std::string>(std::string("")), [](auto data) {
+	}), std::nullopt, BorderSize::Single, 86, 1));
 
 	Column col = Column(std::vector<std::shared_ptr<Widget>> {
 		std::make_shared<Row>(Row(std::vector<std::shared_ptr<Widget>> {
@@ -120,51 +127,36 @@ int main(int argc, char* argv[])
 			}, std::make_optional<std::string>("ring3"), BorderSize::Double)),
 		}, std::nullopt, BorderSize::None)),
 		status,
+		input
 	}, std::nullopt, BorderSize::None);
 
 	Interface tui = Interface(std::shared_ptr<Column>(&col));
 
 	for (;;) {
+
 		tui.Draw();
 
-		INPUT_RECORD input[1];
-		DWORD n;
-		ReadConsoleInput(GetStdHandle(STD_INPUT_HANDLE), input, 1, &n);
+		input.get()->Focus();
 
-		tui.Input(input[0]);
+		std::string* read = (std::string*)input.get()->Binding()->Get().get();
 
-		*(std::string*)(status.get()->Binding()->Get().get()) += "test";
+		((std::string*)status.get()->Binding()->Get().get())->append("\n> " + *read);
 
-		*(double*)(channels[0][0].get()) += 1;
-	}
-	if (res)
-	{
-		char inputstr[100];
-
-		do
-		{
-			memset(inputstr, 0, sizeof(inputstr));
-			std::cin.getline(inputstr, sizeof(inputstr));
-
-			std::cout << "sending >>" << inputstr << std::endl;
-
-			// send command
-			comm.WriteToPartner(inputstr, strlen(inputstr) + 1);
-
-			// wait some time - msecs
-			OS_Sleep(100);
-
-			// check for answers
-			while (comm.IsMessagePending())
-				comm.ProcessMessage();
-
+		if (*read == "quit") {
+			comm.Disconnect();
+			return 0;
 		}
-		while (strcmp(inputstr, "ENDE"));
+
+		comm.WriteToPartner(read->c_str(), read->length() + 1);
+		OS_Sleep(100);
+
+		while (comm.IsMessagePending()) {
+			comm.ProcessMessage();
+			//((std::string*)status.get()->Binding()->Get().get())->append("\n> " + *receiver.get());
+		}
+		read->empty();
 	}
-	else
-	{
-		cerr << "could not connect to server" << endl;
-	}
+
 	comm.Disconnect();
 
 	return 0;
