@@ -51,10 +51,10 @@ int main(int argc, char* argv[])
 
 	std::vector<std::vector<std::shared_ptr<double>>*> channels = std::vector<std::vector<std::shared_ptr<double>>*>{};
 
-	std::shared_ptr<TextBox> status = std::make_shared<TextBox>(TextBox(std::make_shared<std::string>(std::string("")), std::make_shared<std::string>("log"), BorderSize::Double, 86, 6));
+	std::shared_ptr<TextBox> status = std::make_shared<TextBox>(TextBox(std::make_shared<std::string>(std::string("")), std::make_shared<std::string>("log"), BorderSize::Double, 88, 6));
 
 
-	std::shared_ptr<TextBox> input = std::make_shared<TextBox>(TextBox(std::make_shared<std::string>(std::string("")), nullptr, BorderSize::Single, 86, 1));
+	std::shared_ptr<TextBox> input = std::make_shared<TextBox>(TextBox(std::make_shared<std::string>(std::string("")), nullptr, BorderSize::Single, 88, 1));
 
 	std::shared_ptr<std::vector<std::shared_ptr<Widget>>> rings = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
 		status,
@@ -93,10 +93,6 @@ int main(int argc, char* argv[])
 
 			((std::string*)status.get()->Text().get())->append("\n> " + read);
 
-			if (read == "quit") {
-				comm.Disconnect();
-				return 0;
-			}
 			Command* command;
 
 			command = messageFactory.Command(read);
@@ -131,7 +127,7 @@ int main(int argc, char* argv[])
 				continue;
 			}
 			reply = messageFactory.Reply(*receiver.get());
-			((std::string*)status.get()->Text().get())->append("\n> " + reply->ToString().substr(0, reply->ToString().length() - 2));
+			((std::string*)status.get()->Text().get())->append("\n< " + reply->ToString().substr(0, reply->ToString().length() - 2));
 			switch (reply->StatusCode()) {
 			case StatusCode::VERSION: 
 				if (((Replies::Version*)reply)->GetVersion() != "1") {
@@ -163,28 +159,32 @@ int main(int argc, char* argv[])
 				const std::string names[] = { "D", "R", "G", "B", "W", "A", "U" };
 
 				for (int i = ((Replies::Config*)reply)->GetConfig() - 1; i >= 0; i--) {
+					auto light = std::make_shared<Column>(Column(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
+					}), std::make_shared<std::string>("ring3"), BorderSize::Double));
+
 					std::shared_ptr<std::vector<std::shared_ptr<Widget>>> main = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
 					std::shared_ptr<std::vector<std::shared_ptr<Widget>>> ring1 = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
 					std::shared_ptr<std::vector<std::shared_ptr<Widget>>> ring2 = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
 					std::shared_ptr<std::vector<std::shared_ptr<Widget>>> ring3 = std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {});
 
 					for (int j = 0; j < 7; j++) {
-						main.get()->push_back( std::make_shared<Fader>(Fader(channels[i]->at(j        ), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::None, 4, 6, 100)));
-						ring1.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7    ), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::None, 4, 6, 100)));
-						ring2.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7 * 2), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::None, 4, 6, 100)));
-						ring3.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7 * 3), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Single : BorderSize::None, 4, 6, 100)));
+						main.get()->push_back( std::make_shared<Fader>(Fader(channels[i]->at(j        ), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100)));
+						ring1.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7    ), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100)));
+						ring2.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7 * 2), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100)));
+						ring3.get()->push_back(std::make_shared<Fader>(Fader(channels[i]->at(j + 7 * 3), std::make_shared<std::string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100)));
 					}
 
-					rings.get()->insert(rings.get()->begin(), std::make_shared<Row>(Row(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
-						std::make_shared<Row>(Row(ring2, std::make_shared<std::string>("ring2"), BorderSize::Double)),
-							std::make_shared<Row>(Row(ring3, std::make_shared<std::string>("ring3"), BorderSize::Double)),
-					}), nullptr, BorderSize::None)));
+					rings.get()->insert(rings.get()->begin(), std::make_shared<Column>(Column(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
+						std::make_shared<Row>(Row(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
+							std::make_shared<Row>(Row(main, std::make_shared<std::string>("main"), BorderSize::Single)),
+								std::make_shared<Row>(Row(ring1, std::make_shared<std::string>("ring1"), BorderSize::Single))
+						}), nullptr, BorderSize::None)),
 
-
-					rings.get()->insert(rings.get()->begin(), std::make_shared<Row>(Row(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
-						std::make_shared<Row>(Row(main, std::make_shared<std::string>("main"), BorderSize::Double)),
-							std::make_shared<Row>(Row(ring1, std::make_shared<std::string>("ring1"), BorderSize::Double))
-					}), nullptr, BorderSize::None)));
+						std::make_shared<Row>(Row(std::make_shared<std::vector<std::shared_ptr<Widget>>>(std::vector<std::shared_ptr<Widget>> {
+							std::make_shared<Row>(Row(ring2, std::make_shared<std::string>("ring2"), BorderSize::Single)),
+								std::make_shared<Row>(Row(ring3, std::make_shared<std::string>("ring3"), BorderSize::Single)),
+						}), nullptr, BorderSize::None))
+					}), std::make_shared<std::string>("light " + std::to_string(i + 1)), BorderSize::Double)));
 				}
 				state = State::Idle;
 				break;
