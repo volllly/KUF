@@ -1,3 +1,4 @@
-﻿  Client.cpp
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Client.cpp(150,23): warning C4018: '<': signed/unsigned mismatch
+﻿  Interface.cpp
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Interface.cpp(93,8): warning C4101: 'written': unreferenced local variable
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Interface.cpp(225,2): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned short', possible loss of data
   Client.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Client.exe

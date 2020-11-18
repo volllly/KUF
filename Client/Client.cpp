@@ -49,12 +49,12 @@ int main(int argc, char* argv[])
 
 	bool res = comm.Connect(servername, serverPort);
 
-	vector<shared_ptr<vector<shared_ptr<double>>>> channels = vector<shared_ptr<vector<shared_ptr<double>>>>{};
+	vector<unique_ptr<vector<shared_ptr<double>>>> channels = vector<unique_ptr<vector<shared_ptr<double>>>>{};
 
-	shared_ptr<TextBox> status = make_shared<TextBox>(make_shared<string>(""), make_shared<string>("log"), BorderSize::Double, 88, 6);
+	shared_ptr<TextBox> status = make_shared<TextBox>(make_shared<string>(""), make_shared<string>("log"), BorderSize::Double, 84, 6);
 
 
-	shared_ptr<TextBox> input = make_shared<TextBox>(make_shared<string>(""), nullptr, BorderSize::Single, 88, 1);
+	shared_ptr<TextBox> input = make_shared<TextBox>(make_shared<string>(""), nullptr, BorderSize::Single, 84, 1);
 
 	shared_ptr<vector<shared_ptr<Widget>>> rings = make_shared<vector<shared_ptr<Widget>>>(vector<shared_ptr<Widget>> {
 		status,
@@ -148,11 +148,11 @@ int main(int argc, char* argv[])
 			}
 			case StatusCode::CONFIG:
 				for (int i = 0; i < ((Replies::Config*)reply.get())->GetConfig(); i++) {
-					shared_ptr<vector<shared_ptr<double>>> channel = make_shared<vector<shared_ptr<double>>>();
+					unique_ptr<vector<shared_ptr<double>>> channel = make_unique<vector<shared_ptr<double>>>();
 					for (int j = 0; j < 7 * 4; j++) {
 						channel->push_back(make_shared<double>(0));
 					}
-					channels.push_back(channel);
+					channels.push_back(move(channel));
 				}
 
 				const string names[] = { "D", "R", "G", "B", "W", "A", "U" };

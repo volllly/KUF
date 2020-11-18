@@ -46,10 +46,21 @@ void Widget::DrawBorder(short int x, short int y) {
 	}
 }
 
+void Widget::Clear(short int x, short int y) {
+	for (unsigned int j = 0; j < InnerHeight(); j++) {
+		for (unsigned int i = 0; i < InnerWidth(); i++) {
+			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x + (short)i, y + (short)j });
+			cout << ' ';
+		}
+	}
+}
+
 void Widget::Draw(short int x, short int y) {
+	Clear(x, y);
 	DrawBorder(x, y);
-	auto margin = (_border != BorderSize::None || _title ? 1 : 0);
-	DrawContent(x + margin, y + margin);
+	auto marginX = (_border != BorderSize::None ? 1 : 0);
+	auto marginY = (_border != BorderSize::None || _title ? 1 : 0);
+	DrawContent(x + marginX, y + marginY);
 }
 unsigned int Widget::InnerWidth() {
 	return 0;
@@ -59,11 +70,16 @@ unsigned int Widget::InnerHeight() {
 }
 
 unsigned int Widget::Width() {
-	return InnerWidth() + (_border != BorderSize::None || _title ? 2 : 0);
+	return InnerWidth() + (_border != BorderSize::None ? 2 : 0);
 }
 
 unsigned int Widget::Height() {
-	return InnerHeight() + (_border != BorderSize::None || _title ? 2 : 0);
+	auto margin = _title ? 1 : 0; 
+	if(_border != BorderSize::None) {
+		margin = 2;
+	}
+
+	return InnerHeight() + margin;
 }
 
 Interface::Interface(shared_ptr<Widget> widget) {
@@ -73,8 +89,6 @@ Interface::Interface(shared_ptr<Widget> widget) {
 void Interface::Draw() {
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
-	CONSOLE_SCREEN_BUFFER_INFO info;
-	unsigned short int x = 0, y = 0;
 
 	DWORD written;
 
@@ -85,12 +99,29 @@ void Interface::Draw() {
 
 	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor);
 
+	CONSOLE_SCREEN_BUFFER_INFO info;
+	unsigned short int x = 0, y = 0;
 	if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info)) {
-		FillConsoleOutputCharacter(GetStdHandle(STD_OUTPUT_HANDLE), ' ', info.dwSize.X * info.dwSize.Y, COORD { 0, 0 }, &written);
 		x = info.srWindow.Left;
 		y = info.srWindow.Top;
 	}
+
 	_widget->Draw(x, y);
+}
+
+
+void Container::Clear(short int x, short int y) {
+	if (!_title) { return; }
+
+	for (unsigned int j = 0; j < InnerHeight(); j++) {
+		for (unsigned int i = 0; i < InnerWidth(); i++) {
+			if ((i > 0) && (i < InnerWidth()) && (j > 0) && (j < InnerHeight())) { continue; }
+			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x + (short)i, y + (short)j });
+			cout << ' ';
+		}
+
+		if (_border != BorderSize::None) { return; }
+	}
 }
 
 Row::Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {

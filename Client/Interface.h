@@ -78,7 +78,7 @@ public:
 	unsigned int Width();
 
 	void Draw(short int x, short int y);
-
+	virtual void Clear(short int x, short int y);
 	virtual void Focus() {}
 };
 
@@ -96,6 +96,8 @@ public:
 class Container : public Widget {
 public:
 	Container(shared_ptr<string> title, BorderSize border) : Widget(title, border) {}
+
+	virtual void Clear(short int x, short int y);
 };
 
 class Row : public Container {
