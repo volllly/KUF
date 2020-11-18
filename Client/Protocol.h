@@ -6,13 +6,15 @@
 #include <optional>
 #include <iostream>
 
+using namespace std;
+
 enum class Ring {
 	MAIN,
 	RING1,
 	RING2,
 	RING3
 };
-const std::map<Ring, std::string> RingAttributes = {
+const map<Ring, string> RingAttributes = {
 	{Ring::MAIN,  "main"},
 	{Ring::RING1, "ring1"},
 	{Ring::RING2, "ring2"},
@@ -28,7 +30,7 @@ enum class Color {
 	AMBER,
 	UV
 };
-const std::map<Color, std::string> ColorAttributes = {
+const map<Color, string> ColorAttributes = {
 	{Color::DIMM,  "dimm"},
 	{Color::RED,   "red"},
 	{Color::GREEN, "green"},
@@ -50,7 +52,7 @@ enum class StatusCode {
 	UNKNOWN_VERSION,
 	INTERNAL
 };
-const std::map<StatusCode, unsigned int> StatusCodeAttributes = {
+const map<StatusCode, unsigned int> StatusCodeAttributes = {
 	{StatusCode::DONE,				200},
 	{StatusCode::VERSION,			210},
 	{StatusCode::CONFIG,			211},
@@ -70,7 +72,7 @@ enum class Cmd {
 	STATUS,
 	CONFIG
 };
-const std::map<Cmd, std::string> CmdAttributes = {
+const map<Cmd, string> CmdAttributes = {
 	{Cmd::CONNECT, "connect"},
 	{Cmd::VERSION, "version"},
 	{Cmd::SET,     "set"},
@@ -83,11 +85,11 @@ class Value
 {
 private:
 	unsigned int _light;
-	std::optional<Ring> _ring;
-	std::optional<Color> _color;
-	std::optional<double> _value;
+	optional<Ring> _ring;
+	optional<Color> _color;
+	optional<double> _value;
 
-	Value(unsigned int light, std::optional<Ring> ring, std::optional<Color> color = std::nullopt, std::optional<double> value = std::nullopt);
+	Value(unsigned int light, optional<Ring> ring, optional<Color> color = nullopt, optional<double> value = nullopt);
 
 public:
 	Value(unsigned int light);
@@ -95,31 +97,31 @@ public:
 	Value(unsigned int light, Ring ring, Color color);
 	Value(unsigned int light, Ring ring, Color color, double value);
 
-	Value(std::string);
+	Value(string);
 
-	std::string ToString();
+	string ToString();
 
 	unsigned int GetLight();
-	std::optional<Ring> GetRing();
-	std::optional<Color> GetColor();
-	std::optional<double> GetValue();
+	optional<Ring> GetRing();
+	optional<Color> GetColor();
+	optional<double> GetValue();
 	void SetValue(double);
 };
 
 class Message {
 protected:
-	virtual std::string Head() = 0;
+	virtual string Head() = 0;
 
 public:
-	virtual std::string ToString();
-	virtual std::string Payload();
+	virtual string ToString();
+	virtual string Payload();
 };
 
 class Command : public Message {
 protected:
 	Cmd _cmd;
 
-	std::string Head();
+	string Head();
 
 public:
 	Cmd Cmd();
@@ -129,7 +131,7 @@ class Reply : public Message {
 protected:
 	StatusCode _statusCode;
 
-	std::string Head();
+	string Head();
 
 public:
 	StatusCode StatusCode();
@@ -139,57 +141,57 @@ namespace Commands {
 	class Connect : public Command
 	{
 	private:
-		std::vector<std::string> _versions;
-		std::string Payload();
+		vector<string> _versions;
+		string Payload();
 		
 	public:
 		Connect();
-		Connect(std::vector<std::string> versions);
-		static Connect* Parse(std::string from);
+		Connect(vector<string> versions);
+		static shared_ptr<Connect> Parse(string from);
 	};
 
 	class Version : public Command
 	{
 	public:
 		Version();
-		static Version* Parse();
+		static shared_ptr<Version> Parse();
 	};
 
 	class Set : public Command
 	{
 	private:
-		std::vector<Value> _values;
-		std::string Payload();
+		vector<Value> _values;
+		string Payload();
 	public:
-		Set(std::vector<Value> values);
-		static Set* Parse(std::string from);
+		Set(vector<Value> values);
+		static shared_ptr<Set> Parse(string from);
 	};
 
 	class Reset : public Command
 	{
 	private:
-		std::vector<unsigned int> _lights;
-		std::string Payload();
+		vector<unsigned int> _lights;
+		string Payload();
 	public:
-		Reset(std::vector<unsigned int> lights);
-		static Reset* Parse(std::string from);
+		Reset(vector<unsigned int> lights);
+		static shared_ptr<Reset> Parse(string from);
 	};
 
 	class Status : public Command
 	{
 	private:
-		std::vector<unsigned int> _status;
-		std::string Payload();
+		vector<unsigned int> _status;
+		string Payload();
 	public:
-		Status(std::vector<unsigned int> lights);
-		static Status* Parse(std::string from);
+		Status(vector<unsigned int> lights);
+		static shared_ptr<Status> Parse(string from);
 	};
 
 	class Config : public Command
 	{
 	public:
 		Config();
-		static Config* Parse();
+		static shared_ptr<Config> Parse();
 	};
 }
 
@@ -198,28 +200,28 @@ namespace Replies {
 	{
 	public:
 		Done();
-		static Done* Parse();
+		static shared_ptr<Done> Parse();
 	};
 
 	class Version : public Reply
 	{
 	private:
-		std::string _version;
-		std::string Payload();
+		string _version;
+		string Payload();
 	public:
-		Version(std::string version);
-		static Version* Parse(std::string from);
-		std::string GetVersion();
+		Version(string version);
+		static shared_ptr<Version> Parse(string from);
+		string GetVersion();
 	};
 
 	class Config : public Reply
 	{
 	private:
 		unsigned int _lights;
-		std::string Payload();
+		string Payload();
 	public:
 		Config(unsigned int lights);
-		static Config* Parse(std::string from);
+		static shared_ptr<Config> Parse(string from);
 		unsigned int GetConfig();
 
 	};
@@ -227,64 +229,64 @@ namespace Replies {
 	class StatusDifference : public Reply
 	{
 	private:
-		std::vector<Value> _status;
-		std::string Payload();
+		vector<Value> _status;
+		string Payload();
 	public:
-		StatusDifference(std::vector<Value> status);
-		static StatusDifference* Parse(std::string from);
-		std::vector<Value> GetStatus();
+		StatusDifference(vector<Value> status);
+		static shared_ptr<StatusDifference> Parse(string from);
+		vector<Value> GetStatus();
 	};
 
 	class Status : public StatusDifference {
 	public:
-		Status(std::vector<Value> status);
-		static Status* Parse(std::string from);
+		Status(vector<Value> status);
+		static shared_ptr<Status> Parse(string from);
 	};
 
 	class NotFound : public Reply {
 	private:
-		std::vector<Value> _notFound;
-		std::string Payload();
+		vector<Value> _notFound;
+		string Payload();
 	public:
-		NotFound(std::vector<Value> notFound);
-		static NotFound* Parse(std::string from);
+		NotFound(vector<Value> notFound);
+		static shared_ptr<NotFound> Parse(string from);
 	};
 
 	class Unknown : public Reply
 	{
 	private:
-		std::string _command;
-		std::string Payload();
+		string _command;
+		string Payload();
 	public:
-		Unknown(std::string command);
-		static Unknown* Parse(std::string from);
+		Unknown(string command);
+		static shared_ptr<Unknown> Parse(string from);
 	};
 
 	class UnknownVersion : public Reply
 	{
 	private:
-		std::vector<std::string> _versions;
-		std::string Payload();
+		vector<string> _versions;
+		string Payload();
 	public:
-		UnknownVersion(std::vector<std::string> versions);
-		static UnknownVersion* Parse(std::string from);
+		UnknownVersion(vector<string> versions);
+		static shared_ptr<UnknownVersion> Parse(string from);
 	};
 
 	class Internal : public Reply
 	{
 	private:
-		std::string _details;
-		std::string Payload();
+		string _details;
+		string Payload();
 	public:
-		Internal(std::string details);
-		static Internal* Parse(std::string from);
+		Internal(string details);
+		static shared_ptr<Internal> Parse(string from);
 	};
 }
 
 
 class MessageFactory {
 public:
-	Command* Command(std::string from);
+	shared_ptr<Command> Command(string from);
 
-	Reply* Reply(std::string from);
+	shared_ptr<Reply> Reply(string from);
 };

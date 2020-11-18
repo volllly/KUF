@@ -5,6 +5,8 @@
 
 #include "Protocol.h"
 
+using namespace std;
+
 enum class BorderSize {
 	None,
 	Dotted,
@@ -14,15 +16,15 @@ enum class BorderSize {
 };
 
 const struct BorderSymbols {
-	std::string tl;
-	std::string tr;
-	std::string h;
-	std::string v;
-	std::string bl;
-	std::string br;
+	string tl;
+	string tr;
+	string h;
+	string v;
+	string bl;
+	string br;
 };
 
-const std::map<BorderSize, BorderSymbols> BorderAttributes = {
+const map<BorderSize, BorderSymbols> BorderAttributes = {
 	{BorderSize::Single, BorderSymbols {
 		u8"┌",
 		u8"┐",
@@ -59,7 +61,7 @@ const std::map<BorderSize, BorderSymbols> BorderAttributes = {
 
 class Widget {
 protected:
-	std::shared_ptr<std::string> _title;
+	shared_ptr<string> _title;
 	BorderSize _border;
 
 	virtual unsigned int InnerHeight();
@@ -70,7 +72,7 @@ protected:
 
 
 public:
-	Widget(std::shared_ptr<std::string> title, BorderSize border);
+	Widget(shared_ptr<string> title, BorderSize border);
 
 	unsigned int Height();
 	unsigned int Width();
@@ -84,45 +86,45 @@ public:
 class Interface
 {
 private:
-	std::shared_ptr<Widget> _widget;
+	shared_ptr<Widget> _widget;
 public:
-	Interface(std::shared_ptr<Widget> widget);
+	Interface(shared_ptr<Widget> widget);
 
 	void Draw();
 };
 
 class Container : public Widget {
 public:
-	Container(std::shared_ptr<std::string> title, BorderSize border) : Widget(title, border) {}
+	Container(shared_ptr<string> title, BorderSize border) : Widget(title, border) {}
 };
 
 class Row : public Container {
 private:
-	std::shared_ptr<std::vector<std::shared_ptr<Widget>>> _widgets;
+	shared_ptr<vector<shared_ptr<Widget>>> _widgets;
 
 	unsigned int InnerHeight();
 	unsigned int InnerWidth();
 	void DrawContent(short int x, short int y);
 public:
-	Row(std::shared_ptr<std::vector<std::shared_ptr<Widget>>> widgets, std::shared_ptr<std::string> title, BorderSize border);
+	Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border);
 };
 
 class Column : public Container {
 private:
-	std::shared_ptr<std::vector<std::shared_ptr<Widget>>> _widgets;
+	shared_ptr<vector<shared_ptr<Widget>>> _widgets;
 
 	unsigned int InnerHeight();
 	unsigned int InnerWidth();
 	void DrawContent(short int x, short int y);
 public:
-	Column(std::shared_ptr<std::vector<std::shared_ptr<Widget>>> widgets, std::shared_ptr<std::string> title, BorderSize border);
+	Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border);
 
 };
 
 
 class TextBox : public Widget {
 private:
-	std::shared_ptr<std::string> _text;
+	shared_ptr<string> _text;
 
 	unsigned int _width;
 	unsigned int _height;
@@ -133,15 +135,15 @@ private:
 	unsigned int InnerWidth();
 	void DrawContent(short int x, short int y);
 public:
-	TextBox(std::shared_ptr<std::string> text, std::shared_ptr<std::string> title, BorderSize border, unsigned int width, unsigned int height);
-	std::shared_ptr<std::string> Text();
+	TextBox(shared_ptr<string> text, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height);
+	shared_ptr<string> Text();
 
 	void Focus();
 };
 
 class Fader : public Widget {
 private:
-	std::shared_ptr<double> _value;
+	shared_ptr<double> _value;
 
 	unsigned int _height;
 	unsigned int _width;
@@ -153,6 +155,6 @@ private:
 	void DrawContent(short int x, short int y);
 
 public:
-	Fader(std::shared_ptr<double> value, std::shared_ptr<std::string> title, BorderSize border, unsigned int width, unsigned int height, double max);
-	std::shared_ptr<double> Value();
+	Fader(shared_ptr<double> value, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height, double max);
+	shared_ptr<double> Value();
 };

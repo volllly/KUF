@@ -17,8 +17,8 @@ void CallbackHandler::ConnectionLost()
 
 void CallbackHandler::DataReceived(const char *data, unsigned len)
 {
-	_receiver.get()->clear();
-	_receiver.get()->append(data);
+	_receiver->clear();
+	_receiver->append(data);
   // here we rely on the fact that the data is a string!
   //std::cout << "got new data >>" << data << "<< len " << len << std::endl;
 }

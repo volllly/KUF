@@ -4,8 +4,8 @@
 #include <functional>
 #include <regex>
 
-template <typename T> std::string join(std::vector<T> vector, std::string separator, std::function<std::string(T)> f, bool space = true) {
-	std::string accumulator = "";
+template <typename T> string join(vector<T> vector, string separator, function<string(T)> f, bool space = true) {
+	string accumulator = "";
 
 	for (auto& item : vector) {
 		accumulator += f(item) + separator + (space ? " " : "");
@@ -16,7 +16,7 @@ template <typename T> std::string join(std::vector<T> vector, std::string separa
 	return accumulator;
 }
 
-template <typename T, typename U> T parseEnum(U from, std::map<T, U> Attributes) {
+template <typename T, typename U> T parseEnum(U from, map<T, U> Attributes) {
 	for (auto&& item : Attributes) {
 		if (item.second == from) {
 			return item.first;
@@ -26,84 +26,84 @@ template <typename T, typename U> T parseEnum(U from, std::map<T, U> Attributes)
 	throw "Enum value not found";
 }
 
-std::string trim(const std::string& s)
+string trim(const string& s)
 {
-	auto wsfront = std::find_if_not(s.begin(), s.end(), [](int c) {return std::isspace(c); });
-	auto wsback = std::find_if_not(s.rbegin(), s.rend(), [](int c) {return std::isspace(c); }).base();
-	return (wsback <= wsfront ? std::string() : std::string(wsfront, wsback));
+	auto wsfront = find_if_not(s.begin(), s.end(), [](int c) {return isspace(c); });
+	auto wsback = find_if_not(s.rbegin(), s.rend(), [](int c) {return isspace(c); }).base();
+	return (wsback <= wsfront ? string() : string(wsfront, wsback));
 }
 
-std::vector<std::string> split(const std::string& s, std::string at) {
-	std::vector<std::string> v = std::vector<std::string>{};
+vector<string> split(const string& s, string at) {
+	vector<string> v = vector<string>{};
 
-	std::string rest = s;
+	string rest = s;
 	for (;;) {
 		int found = rest.find_first_of(at);
-		std::string sub = rest.substr(0, found);
+		string sub = rest.substr(0, found);
 		if (sub.empty()) { break; }
 		v.push_back(trim(sub));
-		if (found == std::string::npos) { break; }
+		if (found == string::npos) { break; }
 		rest = rest.substr(found + 1);
 	}
 	return v;
 }
 
 Value::Value(unsigned int light)
-	: Value(light, std::nullopt) {}
+	: Value(light, nullopt) {}
 
 Value::Value(unsigned int light, Ring ring)
-	: Value(light, std::make_optional(ring)) {}
+	: Value(light, make_optional(ring)) {}
 
 Value::Value(unsigned int light, Ring ring, Color color)
-	: Value(light, std::make_optional(ring), std::make_optional(color)) {}
+	: Value(light, make_optional(ring), make_optional(color)) {}
 
 Value::Value(unsigned int light, Ring ring, Color color, double value)
-	: Value(light, std::make_optional(ring), std::make_optional(color), std::make_optional(value))  {}
+	: Value(light, make_optional(ring), make_optional(color), make_optional(value))  {}
 
 
-Value::Value(unsigned int light, std::optional<Ring> ring, std::optional<Color> color, std::optional<double> value) {
+Value::Value(unsigned int light, optional<Ring> ring, optional<Color> color, optional<double> value) {
 	_light = light;
 	_ring = ring;
 	_color = color;
 	_value = value;
 }
 
-Value::Value(std::string from) {
-	std::smatch valueMatch;
+Value::Value(string from) {
+	smatch valueMatch;
 
 
-	if (!std::regex_match(from, valueMatch, std::regex("^(\\d*)(?: +(\\w*)(?: +(\\w*)(?: +(\\d*(?:\\.\\d*)?))?)?)?(?:.*)"))) {
+	if (!regex_match(from, valueMatch, regex("^(\\d*)(?: +(\\w*)(?: +(\\w*)(?: +(\\d*(?:\\.\\d*)?))?)?)?(?:.*)"))) {
 		throw "could not parse values";
 	}
 
-	_light = std::stoul(valueMatch[1].str());
-	_ring = valueMatch[2].matched ? std::optional(parseEnum<Ring, std::string>(valueMatch[2].str(), RingAttributes)) : std::nullopt;
-	_color = valueMatch[3].matched ? std::optional(parseEnum<Color, std::string>(valueMatch[3].str(), ColorAttributes)) : std::nullopt;
-	_value = valueMatch[4].matched ? std::optional(std::stod(valueMatch[4].str())) : std::nullopt;
+	_light = stoul(valueMatch[1].str());
+	_ring = valueMatch[2].matched ? optional(parseEnum<Ring, string>(valueMatch[2].str(), RingAttributes)) : nullopt;
+	_color = valueMatch[3].matched ? optional(parseEnum<Color, string>(valueMatch[3].str(), ColorAttributes)) : nullopt;
+	_value = valueMatch[4].matched ? optional(stod(valueMatch[4].str())) : nullopt;
 }
 
-std::string Value::ToString() {
-	return std::to_string(_light) + (!_ring.has_value() ? "" : " " +
+string Value::ToString() {
+	return to_string(_light) + (!_ring.has_value() ? "" : " " +
 		RingAttributes.at(_ring.value()) + (!_color.has_value() ? "" : " " +
 			ColorAttributes.at(_color.value()) + (!_value.has_value() ? "" : " " +
-				std::to_string(_value.value()))));
+				to_string(_value.value()))));
 }
 
 
 unsigned int Value::GetLight() { return _light; }
-std::optional<Ring> Value::GetRing() { return _ring; }
-std::optional<Color> Value::GetColor() { return _color; }
-std::optional<double> Value::GetValue() { return _value; }
+optional<Ring> Value::GetRing() { return _ring; }
+optional<Color> Value::GetColor() { return _color; }
+optional<double> Value::GetValue() { return _value; }
 void Value::SetValue(double value) {
-	_value = std::make_optional(value);
+	_value = make_optional(value);
 };
 
-std::string Message::Payload() {
+string Message::Payload() {
 	return "";
 }
 
-std::string Message::ToString() {
-	std::string payload = Payload();
+string Message::ToString() {
+	string payload = Payload();
 	return Head() + (payload.length() ? ": " + payload : "") + "\r\n";
 }
 
@@ -112,7 +112,7 @@ Cmd Command::Cmd() {
 }
 
 
-std::string Command::Head() {
+string Command::Head() {
 	return CmdAttributes.at(Cmd());
 }
 
@@ -121,8 +121,8 @@ StatusCode Reply::StatusCode() {
 	return _statusCode;
 }
 
-std::string Reply::Head() {
-	return std::to_string(StatusCodeAttributes.at(StatusCode()));
+string Reply::Head() {
+	return to_string(StatusCodeAttributes.at(StatusCode()));
 }
 
 
@@ -132,15 +132,15 @@ Commands::Connect::Connect() {
 	_versions = { "1" };
 }
 
-Commands::Connect::Connect(std::vector<std::string> versions) : Connect() {
+Commands::Connect::Connect(vector<string> versions) : Connect() {
 	_versions = versions;
 
 }
 
 
 
-std::string Commands::Connect::Payload() {
-	return std::accumulate(_versions.begin(), _versions.end(), std::string{}, [](std::string a, std::string b) {
+string Commands::Connect::Payload() {
+	return accumulate(_versions.begin(), _versions.end(), string{}, [](string a, string b) {
 		return a.length() && b.length() ? a + "; " + b : a + b;
 	}) + ";";
 }
@@ -151,34 +151,34 @@ Commands::Version::Version() {
 }
 
 
-Commands::Set::Set(std::vector<Value> values) {
+Commands::Set::Set(vector<Value> values) {
 	_cmd = Cmd::SET;
 	_values = values;
 }
 
-std::string Commands::Set::Payload() {
+string Commands::Set::Payload() {
 	return join<Value>(_values, ";", [](Value value) { return value.ToString(); });
 }
 
 
-Commands::Reset::Reset(std::vector<unsigned int> lights) {
+Commands::Reset::Reset(vector<unsigned int> lights) {
 	_cmd = Cmd::RESET;
 	_lights = lights;
 }
 
-std::string Commands::Reset::Payload() {
-	return join<unsigned int>(_lights, ";", [](unsigned int light) { return std::to_string(light); });
+string Commands::Reset::Payload() {
+	return join<unsigned int>(_lights, ";", [](unsigned int light) { return to_string(light); });
 
 }
 
 
-Commands::Status::Status(std::vector<unsigned int> status) {
+Commands::Status::Status(vector<unsigned int> status) {
 	_cmd = Cmd::STATUS;
 	_status = status;
 }
 
-std::string Commands::Status::Payload() {
-	return join<unsigned int>(_status, ";", [](unsigned int status) { return std::to_string(status); });
+string Commands::Status::Payload() {
+	return join<unsigned int>(_status, ";", [](unsigned int status) { return to_string(status); });
 }
 
 
@@ -193,16 +193,16 @@ Replies::Done::Done() {
 }
 
 
-Replies::Version::Version(std::string version) {
+Replies::Version::Version(string version) {
 	_statusCode = StatusCode::VERSION;
 	_version = version;
 }
 
-std::string Replies::Version::Payload() {
+string Replies::Version::Payload() {
 	return _version;
 }
 
-std::string Replies::Version::GetVersion() {
+string Replies::Version::GetVersion() {
 	return _version;
 }
 
@@ -211,8 +211,8 @@ Replies::Config::Config(unsigned int lights) {
 	_lights = lights;
 }
 
-std::string Replies::Config::Payload() {
-	return std::to_string(_lights);
+string Replies::Config::Payload() {
+	return to_string(_lights);
 }
 
 unsigned int Replies::Config::GetConfig() {
@@ -220,73 +220,73 @@ unsigned int Replies::Config::GetConfig() {
 }
 
 
-Replies::StatusDifference::StatusDifference(std::vector<Value> status) {
+Replies::StatusDifference::StatusDifference(vector<Value> status) {
 	_statusCode = StatusCode::STATUS_DIFFERENCE;
 	_status = status;
 }
 
-std::string Replies::StatusDifference::Payload() {
+string Replies::StatusDifference::Payload() {
 	return join<Value>(_status, ";", [](Value value) { return value.ToString(); });
 }
 
-std::vector<Value> Replies::StatusDifference::GetStatus() {
+vector<Value> Replies::StatusDifference::GetStatus() {
 	return _status;
 }
 
-Replies::Status::Status(std::vector<Value> status) : StatusDifference(status) {
+Replies::Status::Status(vector<Value> status) : StatusDifference(status) {
 	_statusCode = StatusCode::STATUS;
 }
 
 
-Replies::NotFound::NotFound(std::vector<Value> status) {
+Replies::NotFound::NotFound(vector<Value> status) {
 	_statusCode = StatusCode::NOT_FOUND;
 	_notFound = status;
 }
 
-std::string Replies::NotFound::Payload() {
+string Replies::NotFound::Payload() {
 	return join<Value>(_notFound, ";", [](Value value) { return value.ToString(); });
 }
 
 
-Replies::Unknown::Unknown(std::string command) {
+Replies::Unknown::Unknown(string command) {
 	_statusCode = StatusCode::UNKNOWN;
 	_command = command;
 }
 
-std::string Replies::Unknown::Payload() {
+string Replies::Unknown::Payload() {
 	return _command;
 }
 
 
-Replies::UnknownVersion::UnknownVersion(std::vector<std::string> versions) {
+Replies::UnknownVersion::UnknownVersion(vector<string> versions) {
 	_statusCode = StatusCode::UNKNOWN_VERSION;
 	_versions = versions;
 }
 
-std::string Replies::UnknownVersion::Payload() {
-	return join<std::string>(_versions, ";", [](std::string value) { return value; });
+string Replies::UnknownVersion::Payload() {
+	return join<string>(_versions, ";", [](string value) { return value; });
 }
 
 
-Replies::Internal::Internal(std::string details) {
+Replies::Internal::Internal(string details) {
 	_statusCode = StatusCode::UNKNOWN;
 	_details = details;
 }
 
-std::string Replies::Internal::Payload() {
+string Replies::Internal::Payload() {
 	return _details;
 }
 
 
-Reply* MessageFactory::Reply(std::string from) {
-	std::smatch statusCodeMatch;
+shared_ptr<Reply> MessageFactory::Reply(string from) {
+	smatch statusCodeMatch;
 	from= from.substr(0, from.find("\r\n"));
 
-	if (!std::regex_match(from, statusCodeMatch, std::regex("([0-9]{3})(?: *: *(.*))?"))) { //^([0-9]{3})(?: *: *(.*))?
+	if (!regex_match(from, statusCodeMatch, regex("([0-9]{3})(?: *: *(.*))?"))) { //^([0-9]{3})(?: *: *(.*))?
 		throw "could not find StatusCode";
 	}
 
-	::StatusCode statusCode = parseEnum<::StatusCode, unsigned int>(std::stoul(statusCodeMatch[1].str()), StatusCodeAttributes);
+	::StatusCode statusCode = parseEnum<::StatusCode, unsigned int>(stoul(statusCodeMatch[1].str()), StatusCodeAttributes);
 
 	auto rest = trim(statusCodeMatch[2].str());
 
@@ -324,15 +324,15 @@ Reply* MessageFactory::Reply(std::string from) {
 }
 
 
-Command* MessageFactory::Command(std::string from) {
-	std::smatch cmdMatch;
+shared_ptr<Command> MessageFactory::Command(string from) {
+	smatch cmdMatch;
 	from = from.substr(0, from.find("\r\n"));
 
-	if (!std::regex_match(from, cmdMatch, std::regex("^([a-z]*)(?: *: *(.*))?"))) {
+	if (!regex_match(from, cmdMatch, regex("^([a-z]*)(?: *: *(.*))?"))) {
 		throw "could not find command";
 	}
 
-	::Cmd cmd = parseEnum<::Cmd, std::string>(cmdMatch[1].str(), CmdAttributes);
+	::Cmd cmd = parseEnum<::Cmd, string>(cmdMatch[1].str(), CmdAttributes);
 
 	auto rest = trim(cmdMatch[2].str());
 
@@ -359,101 +359,101 @@ Command* MessageFactory::Command(std::string from) {
 	}
 }
 
-Replies::Done* Replies::Done::Parse() {
-	return new Done();
+shared_ptr<Replies::Done> Replies::Done::Parse() {
+	return make_shared<Done>();
 }
 
-Replies::Version* Replies::Version::Parse(std::string from) {
-	return new Version(from);
+shared_ptr<Replies::Version> Replies::Version::Parse(string from) {
+	return make_shared<Version>(from);
 }
 
-Replies::Config* Replies::Config::Parse(std::string from) {
-	return new Config(std::stoul(from));
+shared_ptr<Replies::Config> Replies::Config::Parse(string from) {
+	return make_shared<Config>(stoul(from));
 }
 
-Replies::StatusDifference* Replies::StatusDifference::Parse(std::string from) {
-	std::vector<std::string> splitFrom = split(from, ";");
-	std::vector<Value> values;
+shared_ptr<Replies::StatusDifference> Replies::StatusDifference::Parse(string from) {
+	vector<string> splitFrom = split(from, ";");
+	vector<Value> values;
 	for (auto& value : splitFrom) {
 		values.push_back(Value(value));
 	}
 
-	return new Replies::StatusDifference(values);
+	return make_shared<StatusDifference>(values);
 }
 
-Replies::Status* Replies::Status::Parse(std::string from) {
-	std::vector<std::string> splitFrom = split(from, ";");
-	std::vector<Value> values;
+shared_ptr<Replies::Status> Replies::Status::Parse(string from) {
+	vector<string> splitFrom = split(from, ";");
+	vector<Value> values;
 	for (auto& value : splitFrom) {
 		values.push_back(Value(value));
 	}
 
-	return new Replies::Status(values);
+	return make_shared<Status>(values);
 }
 
-Replies::NotFound* Replies::NotFound::Parse(std::string from) {
-	std::vector<std::string> splitFrom = split(from, ";");
-	std::vector<Value> values;
+shared_ptr<Replies::NotFound> Replies::NotFound::Parse(string from) {
+	vector<string> splitFrom = split(from, ";");
+	vector<Value> values;
 	for (auto& value : splitFrom) {
 		values.push_back(Value(value));
 	}
 
-	return new Replies::NotFound(values);
+	return make_shared<NotFound>(values);
 }
 
-Replies::Unknown* Replies::Unknown::Parse(std::string from) {
-	return new Unknown(from);
+shared_ptr<Replies::Unknown> Replies::Unknown::Parse(string from) {
+	return make_shared<Unknown>(from);
 }
 
-Replies::UnknownVersion* Replies::UnknownVersion::Parse(std::string from) {
-	return new Replies::UnknownVersion(split(from, ";"));
+shared_ptr<Replies::UnknownVersion> Replies::UnknownVersion::Parse(string from) {
+	return make_shared<UnknownVersion>(split(from, ";"));
 }
 
-Replies::Internal* Replies::Internal::Parse(std::string from) {
-	return new Internal(from);
+shared_ptr<Replies::Internal> Replies::Internal::Parse(string from) {
+	return make_shared<Internal>(from);
 }
 
 
 
-Commands::Version* Commands::Version::Parse() {
-	return new Commands::Version();
+shared_ptr<Commands::Version> Commands::Version::Parse() {
+	return make_shared<Version>();
 }
 
-Commands::Connect* Commands::Connect::Parse(std::string from) {
-	return new Commands::Connect(split(from, ";"));
+shared_ptr<Commands::Connect> Commands::Connect::Parse(string from) {
+	return make_shared<Connect>(split(from, ";"));
 
 }
 
-Commands::Config* Commands::Config::Parse() {
-	return new Commands::Config();
+shared_ptr<Commands::Config> Commands::Config::Parse() {
+	return make_shared<Config>();
 }
 
-Commands::Set* Commands::Set::Parse(std::string from) {
-	std::vector<std::string> splitFrom = split(from, ";");
-	std::vector<Value> values;
+shared_ptr<Commands::Set> Commands::Set::Parse(string from) {
+	vector<string> splitFrom = split(from, ";");
+	vector<Value> values;
 	for (auto& value : splitFrom) {
 		values.push_back(Value(value));
 	}
 
-	return new Commands::Set(values);
+	return make_shared<Set>(values);
 }
 
-Commands::Reset* Commands::Reset::Parse(std::string from) {
-	std::vector<std::string> splitFrom = split(from, ";");
-	std::vector<unsigned int> values;
+shared_ptr<Commands::Reset> Commands::Reset::Parse(string from) {
+	vector<string> splitFrom = split(from, ";");
+	vector<unsigned int> values;
 	for (auto& value : splitFrom) {
-		values.push_back(std::stoul(value));
+		values.push_back(stoul(value));
 	}
 
-	return new Commands::Reset(values);
+	return make_shared<Reset>(values);
 }
 
-Commands::Status* Commands::Status::Parse(std::string from) {
-	std::vector<std::string> splitFrom = split(from, ";");
-	std::vector<unsigned int> values;
+shared_ptr<Commands::Status> Commands::Status::Parse(string from) {
+	vector<string> splitFrom = split(from, ";");
+	vector<unsigned int> values;
 	for (auto& value : splitFrom) {
-		values.push_back(std::stoul(value));
+		values.push_back(stoul(value));
 	}
 
-	return new Commands::Status(values);
+	return make_shared<Status>(values);
 }
