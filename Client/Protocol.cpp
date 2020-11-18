@@ -202,6 +202,9 @@ std::string Replies::Version::Payload() {
 	return _version;
 }
 
+std::string Replies::Version::GetVersion() {
+	return _version;
+}
 
 Replies::Config::Config(unsigned int lights) {
 	_statusCode = StatusCode::CONFIG;

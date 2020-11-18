@@ -70,9 +70,12 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
       if (strdata.find("config") != std::string::npos) {
         std::string sent = std::string("211: 1\r\n");
         myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
-      } else {
+      } else if (strdata.find("set") != std::string::npos) {
           strdata = strdata.substr(strdata.find(":") + 1, -1);
           std::string sent = std::string("203:" + strdata);
+          myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
+      } else if (strdata.find("connect") != std::string::npos || strdata.find("version") != std::string::npos) {
+          std::string sent = std::string("210: 1\r\n");
           myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
       }
   }

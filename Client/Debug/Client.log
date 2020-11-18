@@ -1,3 +1,3 @@
 ﻿  Client.cpp
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Client.cpp(134,24): warning C4018: '<': signed/unsigned mismatch
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Client.cpp(155,23): warning C4018: '<': signed/unsigned mismatch
   Client.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Client.exe

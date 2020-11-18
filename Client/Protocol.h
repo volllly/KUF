@@ -209,6 +209,7 @@ namespace Replies {
 	public:
 		Version(std::string version);
 		static Version* Parse(std::string from);
+		std::string GetVersion();
 	};
 
 	class Config : public Reply
