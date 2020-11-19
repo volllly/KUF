@@ -91,7 +91,8 @@ private:
 	shared_ptr<Widget> _widget;
 public:
 	Interface(shared_ptr<Widget> widget);
-	Interface(Widget* widget) : Interface(shared_ptr<Widget>(widget)) {}
+	template <class T>
+	Interface(T&& widget) : Interface((shared_ptr<Widget>)make_shared<T>(widget)) {}
 
 	void Draw();
 };
@@ -114,9 +115,6 @@ private:
 public:
 	Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border);
 
-	Row(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border);
-	Row(vector<Widget*>&& widgets, string&& title, BorderSize border) : Row(move(widgets), make_shared<string>(title), border) {}
-
 	Row(vector<shared_ptr<Widget>>&& widgets, shared_ptr<string> title, BorderSize border) : Row(make_shared<vector<shared_ptr<Widget>>>(widgets), title, border) {}
 	Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, string&& title, BorderSize border) : Row(widgets, make_shared<string>(title), border) {}
 
@@ -132,9 +130,6 @@ private:
 	void DrawContent(short int x, short int y);
 public:
 	Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border);
-
-	Column(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border);
-	Column(vector<Widget*>&& widgets, string&& title, BorderSize border) : Column(move(widgets), make_shared<string>(title), border) {}
 
 	Column(vector<shared_ptr<Widget>>&& widgets, shared_ptr<string> title, BorderSize border) : Column(make_shared<vector<shared_ptr<Widget>>>(widgets), title, border) {}
 	Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, string&& title, BorderSize border) : Column(widgets, make_shared<string>(title), border) {}

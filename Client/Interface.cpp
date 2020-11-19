@@ -126,15 +126,6 @@ Row::Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> titl
 	_widgets = widgets;
 }
 
-Row::Row(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
-	_widgets = make_shared<vector<shared_ptr<Widget>>>();
-
-	for (auto widget : widgets) {
-		_widgets->push_back(shared_ptr<Widget>(widget));
-	}
-
-}
-
 void Row::DrawContent(short int x, short int y) {
 	unsigned int width = x;
 	for (auto& widget : *_widgets) {
@@ -165,15 +156,6 @@ unsigned int Row::InnerHeight() {
 
 Column::Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
 	_widgets = widgets;
-}
-
-Column::Column(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
-	_widgets = make_shared<vector<shared_ptr<Widget>>>();
-
-	for (auto widget : widgets) {
-		_widgets->push_back(shared_ptr<Widget>(widget));
-	}
-
 }
 
 void Column::DrawContent(short int x, short int y) {

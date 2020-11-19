@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 		input
 	});
 
-	Interface tui(new Column(rings, shared_ptr<string>({}), BorderSize::None));
+	Interface tui(Column(rings, shared_ptr<string>({}), BorderSize::None));
 	
 	if (!res) {
 		cerr << "error connecting;" << endl;
@@ -172,15 +172,15 @@ int main(int argc, char* argv[])
 						ring3->push_back(make_shared<Fader>(channels[i]->at(j + 7 * 3), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
 					}
 
-					rings->insert(rings->begin(), make_shared<Column>(initializer_list<Widget*> {
-						new Row(initializer_list<Widget*> {
-							new Row(main, "main", BorderSize::Single),
-							new Row(ring1, "ring1", BorderSize::Single)
+					rings->insert(rings->begin(), make_shared<Column>(initializer_list<shared_ptr<Widget>> {
+						make_shared<Row>(initializer_list<shared_ptr<Widget>> {
+							make_shared<Row>(main, "main", BorderSize::Single),
+							make_shared<Row>(ring1, "ring1", BorderSize::Single)
 						}, shared_ptr<string>({}), BorderSize::None),
 
-						new Row(initializer_list<Widget*> {
-							new Row(ring2, "ring2", BorderSize::Single),
-							new Row(ring3, "ring3", BorderSize::Single),
+						make_shared<Row>(initializer_list<shared_ptr<Widget>> {
+							make_shared<Row>(ring2, "ring2", BorderSize::Single),
+							make_shared<Row>(ring3, "ring3", BorderSize::Single),
 						}, shared_ptr<string>({}), BorderSize::None)
 					}, "light " + to_string(i + 1), BorderSize::Double));
 				}
