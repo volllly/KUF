@@ -1,4 +1,7 @@
-﻿  Interface.cpp
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Interface.cpp(93,8): warning C4101: 'written': unreferenced local variable
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Interface.cpp(225,2): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned short', possible loss of data
+﻿  CallbackHandler.cpp
+  Client.cpp
+  Interface.cpp
+  Compiling...
+  Generating Code...
   Client.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Client.exe
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Client.cpp(145): warning C26815: The pointer is dangling because it points at a temporary instance which was destroyed.

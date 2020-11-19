@@ -1,0 +1,2 @@
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\DMX.exe.lastcodeanalysissucceeded
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\DMX\Debug\NativeCodeAnalysis.read.1.tlog

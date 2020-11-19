@@ -1,0 +1,2 @@
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Client.exe.lastcodeanalysissucceeded
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Debug\NativeCodeAnalysis.read.1.tlog

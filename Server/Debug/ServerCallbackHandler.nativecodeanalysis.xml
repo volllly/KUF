@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Server\</FILEPATH>
+      <FILENAME>ServerCallbackHandler.cpp</FILENAME>
+      <LINE>6</LINE>
+      <COLUMN>23</COLUMN>
+    </SFA>
+    <DEFECTCODE>26495</DEFECTCODE>
+    <DESCRIPTION>Variable 'ServerCallbackHandler::myComm' is uninitialized. Always initialize a member variable (type.6).</DESCRIPTION>
+    <FUNCTION>ServerCallbackHandler::{ctor}</FUNCTION>
+    <DECORATED>??0ServerCallbackHandler@@QAE@XZ</DECORATED>
+    <FUNCLINE>6</FUNCLINE>
+    <ADDITIONALINFO>
+      <targetSymbol>ServerCallbackHandler::myComm</targetSymbol>
+    </ADDITIONALINFO>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

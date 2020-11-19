@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\</FILEPATH>
+      <FILENAME>Protocol.h</FILENAME>
+      <LINE>128</LINE>
+      <COLUMN>0</COLUMN>
+    </SFA>
+    <DEFECTCODE>26495</DEFECTCODE>
+    <DESCRIPTION>Variable 'Command::_cmd' is uninitialized. Always initialize a member variable (type.6).</DESCRIPTION>
+    <FUNCTION>Command::{ctor}</FUNCTION>
+    <DECORATED>??0Command@@QAE@XZ</DECORATED>
+    <FUNCLINE>128</FUNCLINE>
+    <ADDITIONALINFO>
+      <targetSymbol>Command::_cmd</targetSymbol>
+    </ADDITIONALINFO>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\</FILEPATH>
+      <FILENAME>Protocol.h</FILENAME>
+      <LINE>138</LINE>
+      <COLUMN>0</COLUMN>
+    </SFA>
+    <DEFECTCODE>26495</DEFECTCODE>
+    <DESCRIPTION>Variable 'Reply::_statusCode' is uninitialized. Always initialize a member variable (type.6).</DESCRIPTION>
+    <FUNCTION>Reply::{ctor}</FUNCTION>
+    <DECORATED>??0Reply@@QAE@XZ</DECORATED>
+    <FUNCLINE>138</FUNCLINE>
+    <ADDITIONALINFO>
+      <targetSymbol>Reply::_statusCode</targetSymbol>
+    </ADDITIONALINFO>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

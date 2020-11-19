@@ -90,8 +90,6 @@ void Interface::Draw() {
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 
-	DWORD written;
-
 	CONSOLE_CURSOR_INFO cursor = {
 		1,
 		false
@@ -222,8 +220,8 @@ void TextBox::DrawContent(short int x, short int y) {
 		lines.push_back(line);
 	}
 	
-	for (unsigned short int i = (unsigned)max((signed)lines.size() - (signed)InnerHeight(), 0); i < (short)lines.size(); i++) {
-		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x, y + i - max((unsigned short int)lines.size() - (unsigned short int)InnerHeight(), 0) });
+	for (unsigned int i = (unsigned)max((signed)lines.size() - (signed)InnerHeight(), 0); i < (unsigned short)lines.size(); i++) {
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x, y + (short)i - max((unsigned short int)lines.size() - (unsigned short int)InnerHeight(), 0) });
 		cout << lines[i];
 	}
 }

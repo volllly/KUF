@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\</FILEPATH>
+      <FILENAME>Client.cpp</FILENAME>
+      <LINE>145</LINE>
+      <COLUMN>121</COLUMN>
+    </SFA>
+    <DEFECTCODE>26815</DEFECTCODE>
+    <DESCRIPTION>The pointer is dangling because it points at a temporary instance which was destroyed.</DESCRIPTION>
+    <FUNCTION>main</FUNCTION>
+    <DECORATED>main</DECORATED>
+    <FUNCLINE>21</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

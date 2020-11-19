@@ -1,2 +1,4 @@
 ﻿  Protocol.cpp
   Protocol.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Protocol.lib
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Protocol.h(128): warning C26495: Variable 'Command::_cmd' is uninitialized. Always initialize a member variable (type.6).
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Protocol.h(138): warning C26495: Variable 'Reply::_statusCode' is uninitialized. Always initialize a member variable (type.6).

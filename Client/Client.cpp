@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 				break;
 			}
 			case StatusCode::CONFIG:
-				for (int i = 0; i < ((Replies::Config*)reply.get())->GetConfig(); i++) {
+				for (int i = 0; i < (signed)((Replies::Config*)reply.get())->GetConfig(); i++) {
 					unique_ptr<vector<shared_ptr<double>>> channel = make_unique<vector<shared_ptr<double>>>();
 					for (int j = 0; j < 7 * 4; j++) {
 						channel->push_back(make_shared<double>(0));
