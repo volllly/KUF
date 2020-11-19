@@ -43,25 +43,25 @@ int main(int argc, char* argv[])
 #endif // DEBUG
 
 	}
-	shared_ptr<string> receiver = make_shared<string>("");
-	shared_ptr<CommCallbacks> callback = make_shared<CallbackHandler>(receiver);
+	auto receiver = make_shared<string>("");
+	auto callback = make_shared<CallbackHandler>(receiver);
 	Communication comm(callback);
 
 	bool res = comm.Connect(servername, serverPort);
 
-	vector<unique_ptr<vector<shared_ptr<double>>>> channels = vector<unique_ptr<vector<shared_ptr<double>>>>{};
+	vector<unique_ptr<vector<shared_ptr<double>>>> channels {};
 
-	shared_ptr<TextBox> status = make_shared<TextBox>(make_shared<string>(""), make_shared<string>("log"), BorderSize::Double, 84, 6);
+	auto status = make_shared<TextBox>("", "log", BorderSize::Double, 84, 6);
 
 
-	shared_ptr<TextBox> input = make_shared<TextBox>(make_shared<string>(""), nullptr, BorderSize::Single, 84, 1);
+	auto input = make_shared<TextBox>("", shared_ptr<string>({}), BorderSize::Single, 84, 1);
 
-	shared_ptr<vector<shared_ptr<Widget>>> rings = make_shared<vector<shared_ptr<Widget>>>(vector<shared_ptr<Widget>> {
+	auto rings = make_shared<vector<shared_ptr<Widget>>>(initializer_list<shared_ptr<Widget>> {
 		status,
 		input
 	});
 
-	Interface tui = Interface(std::make_shared<Column>(rings, nullptr, BorderSize::None));
+	Interface tui(new Column(rings, shared_ptr<string>({}), BorderSize::None));
 	
 	if (!res) {
 		cerr << "error connecting;" << endl;
@@ -72,9 +72,9 @@ int main(int argc, char* argv[])
 		Configure,
 		Idle
 	};
-	State state = State::Connect;
+	auto state = State::Connect;
 
-	MessageFactory messageFactory = MessageFactory();
+	MessageFactory messageFactory{};
 
 
 	for (;;) {
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 		{
 			input->Focus();
 
-			string read = *input->Text();
+			auto read = *input->Text();
 
 			status->Text()->append("\n> " + read);
 
@@ -139,7 +139,7 @@ int main(int argc, char* argv[])
 			case StatusCode::STATUS:
 			case StatusCode::STATUS_DIFFERENCE:
 			{
-				vector<Value> values = ((Replies::StatusDifference*)reply.get())->GetStatus();
+				auto values = ((Replies::StatusDifference*)reply.get())->GetStatus();
 
 				for (auto& value : values) {
 					*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())) = value.GetValue().value();
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
 			}
 			case StatusCode::CONFIG:
 				for (int i = 0; i < (signed)((Replies::Config*)reply.get())->GetConfig(); i++) {
-					unique_ptr<vector<shared_ptr<double>>> channel = make_unique<vector<shared_ptr<double>>>();
+					auto channel = make_unique<vector<shared_ptr<double>>>();
 					for (int j = 0; j < 7 * 4; j++) {
 						channel->push_back(make_shared<double>(0));
 					}
@@ -158,31 +158,31 @@ int main(int argc, char* argv[])
 				const string names[] = { "D", "R", "G", "B", "W", "A", "U" };
 
 				for (int i = ((Replies::Config*)reply.get())->GetConfig() - 1; i >= 0; i--) {
-					auto light = make_shared<Column>(Column(make_shared<vector<shared_ptr<Widget>>>(), make_shared<string>("ring3"), BorderSize::Double));
+					auto light = make_shared<Column>(vector<shared_ptr<Widget>>{}, "ring3", BorderSize::Double);
 
-					shared_ptr<vector<shared_ptr<Widget>>> main = make_shared<vector<shared_ptr<Widget>>>();
-					shared_ptr<vector<shared_ptr<Widget>>> ring1 = make_shared<vector<shared_ptr<Widget>>>();
-					shared_ptr<vector<shared_ptr<Widget>>> ring2 = make_shared<vector<shared_ptr<Widget>>>();
-					shared_ptr<vector<shared_ptr<Widget>>> ring3 = make_shared<vector<shared_ptr<Widget>>>();
+					auto main = make_shared<vector<shared_ptr<Widget>>>();
+					auto ring1 = make_shared<vector<shared_ptr<Widget>>>();
+					auto ring2 = make_shared<vector<shared_ptr<Widget>>>();
+					auto ring3 = make_shared<vector<shared_ptr<Widget>>>();
 
 					for (int j = 0; j < 7; j++) {
-						main->push_back(make_shared<Fader>(channels[i]->at(j), make_shared<string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
-						ring1->push_back(make_shared<Fader>(channels[i]->at(j + 7), make_shared<string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
-						ring2->push_back(make_shared<Fader>(channels[i]->at(j + 7 * 2), make_shared<string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
-						ring3->push_back(make_shared<Fader>(channels[i]->at(j + 7 * 3), make_shared<string>(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
+						main->push_back(make_shared<Fader>(channels[i]->at(j), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
+						ring1->push_back(make_shared<Fader>(channels[i]->at(j + 7), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
+						ring2->push_back(make_shared<Fader>(channels[i]->at(j + 7 * 2), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
+						ring3->push_back(make_shared<Fader>(channels[i]->at(j + 7 * 3), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
 					}
 
-					rings->insert(rings->begin(), make_shared<Column>(make_shared<vector<shared_ptr<Widget>>>(initializer_list<shared_ptr<Widget>> {
-						make_shared<Row>(make_shared<vector<shared_ptr<Widget>>>(initializer_list<shared_ptr<Widget>> {
-							make_shared<Row>(main, make_shared<string>("main"), BorderSize::Single),
-								make_shared<Row>(ring1, make_shared<string>("ring1"), BorderSize::Single)
-						}), nullptr, BorderSize::None),
+					rings->insert(rings->begin(), make_shared<Column>(initializer_list<Widget*> {
+						new Row(initializer_list<Widget*> {
+							new Row(main, "main", BorderSize::Single),
+							new Row(ring1, "ring1", BorderSize::Single)
+						}, shared_ptr<string>({}), BorderSize::None),
 
-							make_shared<Row>(make_shared<vector<shared_ptr<Widget>>>(initializer_list<shared_ptr<Widget>> {
-								make_shared<Row>(ring2, make_shared<string>("ring2"), BorderSize::Single),
-									make_shared<Row>(ring3, make_shared<string>("ring3"), BorderSize::Single),
-							}), nullptr, BorderSize::None)
-					}), make_shared<string>("light " + to_string(i + 1)), BorderSize::Double));
+						new Row(initializer_list<Widget*> {
+							new Row(ring2, "ring2", BorderSize::Single),
+							new Row(ring3, "ring3", BorderSize::Single),
+						}, shared_ptr<string>({}), BorderSize::None)
+					}, "light " + to_string(i + 1), BorderSize::Double));
 				}
 				state = State::Idle;
 				break;

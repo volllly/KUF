@@ -14,7 +14,7 @@ enum class Ring {
 	RING2,
 	RING3
 };
-const map<Ring, string> RingAttributes = {
+const map<Ring, string> RingAttributes {
 	{Ring::MAIN,  "main"},
 	{Ring::RING1, "ring1"},
 	{Ring::RING2, "ring2"},
@@ -30,7 +30,7 @@ enum class Color {
 	AMBER,
 	UV
 };
-const map<Color, string> ColorAttributes = {
+const map<Color, string> ColorAttributes {
 	{Color::DIMM,  "dimm"},
 	{Color::RED,   "red"},
 	{Color::GREEN, "green"},
@@ -52,7 +52,7 @@ enum class StatusCode {
 	UNKNOWN_VERSION,
 	INTERNAL
 };
-const map<StatusCode, unsigned int> StatusCodeAttributes = {
+const map<StatusCode, unsigned int> StatusCodeAttributes {
 	{StatusCode::DONE,				200},
 	{StatusCode::VERSION,			210},
 	{StatusCode::CONFIG,			211},
@@ -72,7 +72,7 @@ enum class Cmd {
 	STATUS,
 	CONFIG
 };
-const map<Cmd, string> CmdAttributes = {
+const map<Cmd, string> CmdAttributes {
 	{Cmd::CONNECT, "connect"},
 	{Cmd::VERSION, "version"},
 	{Cmd::SET,     "set"},

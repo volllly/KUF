@@ -1,7 +1,24 @@
-﻿  CallbackHandler.cpp
-  Client.cpp
-  Interface.cpp
-  Compiling...
-  Generating Code...
-  Client.vcxproj -> C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Client.exe
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Client.cpp(145): warning C26815: The pointer is dangling because it points at a temporary instance which was destroyed.
+﻿  Client.cpp
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.27.29110\include\xmemory(230,12): error C2664: 'Column::Column(Column &&)': cannot convert argument 1 from '_Ty' to 'std::shared_ptr<std::vector<std::shared_ptr<Widget>,std::allocator<std::shared_ptr<Widget>>>>'
+          with
+          [
+              _Ty=std::initializer_list<Row *>
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.27.29110\include\xmemory(230,33): message : No user-defined-conversion operator available that can perform this conversion, or the operator cannot be called
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Interface.h(134,2): message : see declaration of 'Column::Column'
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.27.29110\include\memory(1427): message : see reference to function template instantiation 'void std::_Construct_in_place<_Ty,std::initializer_list<Row *>,std::basic_string<char,std::char_traits<char>,std::allocator<char>>,BorderSize>(_Ty &,std::initializer_list<Row *> &&,std::basic_string<char,std::char_traits<char>,std::allocator<char>> &&,BorderSize &&) noexcept(false)' being compiled
+          with
+          [
+              _Ty=Column
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.27.29110\include\memory(2071): message : see reference to function template instantiation 'std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<std::initializer_list<Row *>,std::basic_string<char,std::char_traits<char>,std::allocator<char>>,BorderSize>(std::initializer_list<Row *> &&,std::basic_string<char,std::char_traits<char>,std::allocator<char>> &&,BorderSize &&)' being compiled
+          with
+          [
+              _Ty=Column
+          ]
+C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Tools\MSVC\14.27.29110\include\memory(2072): message : see reference to function template instantiation 'std::_Ref_count_obj2<_Ty>::_Ref_count_obj2<std::initializer_list<Row *>,std::basic_string<char,std::char_traits<char>,std::allocator<char>>,BorderSize>(std::initializer_list<Row *> &&,std::basic_string<char,std::char_traits<char>,std::allocator<char>> &&,BorderSize &&)' being compiled
+          with
+          [
+              _Ty=Column
+          ]
+C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Client\Client.cpp(185): message : see reference to function template instantiation 'std::shared_ptr<Column> std::make_shared<Column,std::initializer_list<Row *>,std::basic_string<char,std::char_traits<char>,std::allocator<char>>,BorderSize>(std::initializer_list<Row *> &&,std::basic_string<char,std::char_traits<char>,std::allocator<char>> &&,BorderSize &&)' being compiled

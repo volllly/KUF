@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <optional>
 #include <functional>
+#include <numeric>
 
 #include "Protocol.h"
 
@@ -73,6 +74,7 @@ protected:
 
 public:
 	Widget(shared_ptr<string> title, BorderSize border);
+	Widget(string&& title, BorderSize border) : Widget(make_shared<string>(title), border) {}
 
 	unsigned int Height();
 	unsigned int Width();
@@ -89,6 +91,7 @@ private:
 	shared_ptr<Widget> _widget;
 public:
 	Interface(shared_ptr<Widget> widget);
+	Interface(Widget* widget) : Interface(shared_ptr<Widget>(widget)) {}
 
 	void Draw();
 };
@@ -96,6 +99,7 @@ public:
 class Container : public Widget {
 public:
 	Container(shared_ptr<string> title, BorderSize border) : Widget(title, border) {}
+	Container(string&& title, BorderSize border) : Container(make_shared<string>(title), border) {}
 
 	virtual void Clear(short int x, short int y);
 };
@@ -109,6 +113,14 @@ private:
 	void DrawContent(short int x, short int y);
 public:
 	Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border);
+
+	Row(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border);
+	Row(vector<Widget*>&& widgets, string&& title, BorderSize border) : Row(move(widgets), make_shared<string>(title), border) {}
+
+	Row(vector<shared_ptr<Widget>>&& widgets, shared_ptr<string> title, BorderSize border) : Row(make_shared<vector<shared_ptr<Widget>>>(widgets), title, border) {}
+	Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, string&& title, BorderSize border) : Row(widgets, make_shared<string>(title), border) {}
+
+	Row(vector<shared_ptr<Widget>>&& widgets, string&& title, BorderSize border) : Row(move(widgets), make_shared<string>(title), border) {}
 };
 
 class Column : public Container {
@@ -120,6 +132,14 @@ private:
 	void DrawContent(short int x, short int y);
 public:
 	Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border);
+
+	Column(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border);
+	Column(vector<Widget*>&& widgets, string&& title, BorderSize border) : Column(move(widgets), make_shared<string>(title), border) {}
+
+	Column(vector<shared_ptr<Widget>>&& widgets, shared_ptr<string> title, BorderSize border) : Column(make_shared<vector<shared_ptr<Widget>>>(widgets), title, border) {}
+	Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, string&& title, BorderSize border) : Column(widgets, make_shared<string>(title), border) {}
+
+	Column(vector<shared_ptr<Widget>>&& widgets, string title, BorderSize border) : Column(move(widgets), make_shared<string>(title), border) {}
 
 };
 
@@ -138,6 +158,13 @@ private:
 	void DrawContent(short int x, short int y);
 public:
 	TextBox(shared_ptr<string> text, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height);
+
+	TextBox(string&& text, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height) : TextBox(make_shared<string>(text), title, border, width, height) {}
+	TextBox(shared_ptr<string> text, string&& title, BorderSize border, unsigned int width, unsigned int height) : TextBox(text, make_shared<string>(title), border, width, height) {}
+
+	TextBox(string&& text, string&& title, BorderSize border, unsigned int width, unsigned int height) : TextBox(move(text), make_shared<string>(title), border, width, height) {}
+
+
 	shared_ptr<string> Text();
 
 	void Focus();
@@ -158,5 +185,12 @@ private:
 
 public:
 	Fader(shared_ptr<double> value, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height, double max);
+
+	Fader(double&& value, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height, double max) : Fader(make_shared<double>(value), title, border, width, height, max) {}
+	Fader(shared_ptr<double> value, string&& title, BorderSize border, unsigned int width, unsigned int height, double max) : Fader(value, make_shared<string>(move(title)), border, width, height, max) {}
+	
+	Fader(double&& value, string&& title, BorderSize border, unsigned int width, unsigned int height, double max) : Fader(move(value), make_shared<string>(move(title)), border, width, height, max) {}
+
+
 	shared_ptr<double> Value();
 };

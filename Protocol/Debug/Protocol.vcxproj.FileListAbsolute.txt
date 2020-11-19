@@ -1,4 +1,2 @@
 C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Protocol.pdb
 C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Protocol\Debug\Protocol.pdb
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Debug\Protocol.lib.lastcodeanalysissucceeded
-C:\Users\paul.volavsek\Private\FH\KUF\MME2019\Protocol\Debug\NativeCodeAnalysis.read.1.tlog

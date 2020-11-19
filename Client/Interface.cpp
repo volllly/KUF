@@ -15,7 +15,7 @@ Widget::Widget(shared_ptr<string> title, BorderSize border) {
 void Widget::DrawBorder(short int x, short int y) {
 	if (_border != BorderSize::None) {
 		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x, y });
-		BorderSymbols symbols = BorderAttributes.at(_border);
+		auto symbols = BorderAttributes.at(_border);
 
 		cout << symbols.tl;
 		for (unsigned int i = 0; i < InnerWidth(); i++) {
@@ -90,7 +90,7 @@ void Interface::Draw() {
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 
-	CONSOLE_CURSOR_INFO cursor = {
+	CONSOLE_CURSOR_INFO cursor {
 		1,
 		false
 	};
@@ -126,6 +126,15 @@ Row::Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> titl
 	_widgets = widgets;
 }
 
+Row::Row(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
+	_widgets = make_shared<vector<shared_ptr<Widget>>>();
+
+	for (auto widget : widgets) {
+		_widgets->push_back(shared_ptr<Widget>(widget));
+	}
+
+}
+
 void Row::DrawContent(short int x, short int y) {
 	unsigned int width = x;
 	for (auto& widget : *_widgets) {
@@ -156,6 +165,15 @@ unsigned int Row::InnerHeight() {
 
 Column::Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
 	_widgets = widgets;
+}
+
+Column::Column(vector<Widget*>&& widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
+	_widgets = make_shared<vector<shared_ptr<Widget>>>();
+
+	for (auto widget : widgets) {
+		_widgets->push_back(shared_ptr<Widget>(widget));
+	}
+
 }
 
 void Column::DrawContent(short int x, short int y) {
@@ -208,7 +226,7 @@ void TextBox::DrawContent(short int x, short int y) {
 	istringstream iss(text);
 	string line;
 
-	vector<string> lines = vector<string>{};
+	vector<string> lines{};
 
 	while (getline(iss, line))
 	{
@@ -231,7 +249,7 @@ shared_ptr<string> TextBox::Text() {
 }
 
 void TextBox::Focus() {
-	CONSOLE_CURSOR_INFO cursor = {
+	CONSOLE_CURSOR_INFO cursor {
 		1,
 		true
 	};

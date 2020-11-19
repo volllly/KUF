@@ -34,15 +34,19 @@ string trim(const string& s)
 }
 
 vector<string> split(const string& s, string at) {
-	vector<string> v = vector<string>{};
+	vector<string> v {};
 
-	string rest = s;
+	auto rest = s;
 	for (;;) {
-		int found = rest.find_first_of(at);
-		string sub = rest.substr(0, found);
+		auto found = rest.find_first_of(at);
+		auto sub = rest.substr(0, found);
+
 		if (sub.empty()) { break; }
+
 		v.push_back(trim(sub));
+
 		if (found == string::npos) { break; }
+
 		rest = rest.substr(found + 1);
 	}
 	return v;
@@ -77,8 +81,8 @@ Value::Value(string from) {
 	}
 
 	_light = stoul(valueMatch[1].str());
-	_ring = valueMatch[2].matched ? optional(parseEnum<Ring, string>(valueMatch[2].str(), RingAttributes)) : nullopt;
-	_color = valueMatch[3].matched ? optional(parseEnum<Color, string>(valueMatch[3].str(), ColorAttributes)) : nullopt;
+	_ring = valueMatch[2].matched ? optional(parseEnum(valueMatch[2].str(), RingAttributes)) : nullopt;
+	_color = valueMatch[3].matched ? optional(parseEnum(valueMatch[3].str(), ColorAttributes)) : nullopt;
 	_value = valueMatch[4].matched ? optional(stod(valueMatch[4].str())) : nullopt;
 }
 
@@ -94,6 +98,7 @@ unsigned int Value::GetLight() { return _light; }
 optional<Ring> Value::GetRing() { return _ring; }
 optional<Color> Value::GetColor() { return _color; }
 optional<double> Value::GetValue() { return _value; }
+
 void Value::SetValue(double value) {
 	_value = make_optional(value);
 };
@@ -134,13 +139,12 @@ Commands::Connect::Connect() {
 
 Commands::Connect::Connect(vector<string> versions) : Connect() {
 	_versions = versions;
-
 }
 
 
 
 string Commands::Connect::Payload() {
-	return accumulate(_versions.begin(), _versions.end(), string{}, [](string a, string b) {
+	return accumulate(_versions.begin(), _versions.end(), string {}, [](string a, string b) {
 		return a.length() && b.length() ? a + "; " + b : a + b;
 	}) + ";";
 }
@@ -280,13 +284,13 @@ string Replies::Internal::Payload() {
 
 shared_ptr<Reply> MessageFactory::Reply(string from) {
 	smatch statusCodeMatch;
-	from= from.substr(0, from.find("\r\n"));
+	from = from.substr(0, from.find("\r\n"));
 
 	if (!regex_match(from, statusCodeMatch, regex("([0-9]{3})(?: *: *(.*))?"))) { //^([0-9]{3})(?: *: *(.*))?
 		throw "could not find StatusCode";
 	}
 
-	::StatusCode statusCode = parseEnum<::StatusCode, unsigned int>(stoul(statusCodeMatch[1].str()), StatusCodeAttributes);
+	auto statusCode = parseEnum((unsigned int)stoul(statusCodeMatch[1].str()), StatusCodeAttributes);
 
 	auto rest = trim(statusCodeMatch[2].str());
 
@@ -332,7 +336,7 @@ shared_ptr<Command> MessageFactory::Command(string from) {
 		throw "could not find command";
 	}
 
-	::Cmd cmd = parseEnum<::Cmd, string>(cmdMatch[1].str(), CmdAttributes);
+	auto cmd = parseEnum(cmdMatch[1].str(), CmdAttributes);
 
 	auto rest = trim(cmdMatch[2].str());
 
@@ -372,30 +376,33 @@ shared_ptr<Replies::Config> Replies::Config::Parse(string from) {
 }
 
 shared_ptr<Replies::StatusDifference> Replies::StatusDifference::Parse(string from) {
-	vector<string> splitFrom = split(from, ";");
+	auto splitFrom = split(from, ";");
 	vector<Value> values;
+
 	for (auto& value : splitFrom) {
-		values.push_back(Value(value));
+		values.push_back(move(Value(value)));
 	}
 
 	return make_shared<StatusDifference>(values);
 }
 
 shared_ptr<Replies::Status> Replies::Status::Parse(string from) {
-	vector<string> splitFrom = split(from, ";");
+	auto splitFrom = split(from, ";");
 	vector<Value> values;
+
 	for (auto& value : splitFrom) {
-		values.push_back(Value(value));
+		values.push_back(Value(move(value)));
 	}
 
 	return make_shared<Status>(values);
 }
 
 shared_ptr<Replies::NotFound> Replies::NotFound::Parse(string from) {
-	vector<string> splitFrom = split(from, ";");
+	auto splitFrom = split(from, ";");
 	vector<Value> values;
+
 	for (auto& value : splitFrom) {
-		values.push_back(Value(value));
+		values.push_back(Value(move(value)));
 	}
 
 	return make_shared<NotFound>(values);
@@ -429,18 +436,20 @@ shared_ptr<Commands::Config> Commands::Config::Parse() {
 }
 
 shared_ptr<Commands::Set> Commands::Set::Parse(string from) {
-	vector<string> splitFrom = split(from, ";");
+	auto splitFrom = split(from, ";");
 	vector<Value> values;
+
 	for (auto& value : splitFrom) {
-		values.push_back(Value(value));
+		values.push_back(Value(move(value)));
 	}
 
 	return make_shared<Set>(values);
 }
 
 shared_ptr<Commands::Reset> Commands::Reset::Parse(string from) {
-	vector<string> splitFrom = split(from, ";");
+	auto splitFrom = split(from, ";");
 	vector<unsigned int> values;
+
 	for (auto& value : splitFrom) {
 		values.push_back(stoul(value));
 	}
@@ -449,8 +458,9 @@ shared_ptr<Commands::Reset> Commands::Reset::Parse(string from) {
 }
 
 shared_ptr<Commands::Status> Commands::Status::Parse(string from) {
-	vector<string> splitFrom = split(from, ";");
+	auto splitFrom = split(from, ";");
 	vector<unsigned int> values;
+
 	for (auto& value : splitFrom) {
 		values.push_back(stoul(value));
 	}
