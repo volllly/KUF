@@ -145,8 +145,8 @@ Commands::Connect::Connect(vector<string> versions) : Connect() {
 
 string Commands::Connect::Payload() {
 	return accumulate(_versions.begin(), _versions.end(), string {}, [](string a, string b) {
-		return a.length() && b.length() ? a + "; " + b : a + b;
-	}) + ";";
+		return a.length() && b.length() ? a + " ; " + b : a + b;
+	}) + " ; ";
 }
 
 
@@ -161,7 +161,7 @@ Commands::Set::Set(vector<Value> values) {
 }
 
 string Commands::Set::Payload() {
-	return join<Value>(_values, ";", [](Value value) { return value.ToString(); });
+	return join<Value>(_values, " ; ", [](Value value) { return value.ToString(); });
 }
 
 vector<Value> Commands::Set::GetValues() {
@@ -175,7 +175,7 @@ Commands::Reset::Reset(vector<unsigned int> lights) {
 }
 
 string Commands::Reset::Payload() {
-	return join<unsigned int>(_lights, ";", [](unsigned int light) { return to_string(light); });
+	return join<unsigned int>(_lights, " ; ", [](unsigned int light) { return to_string(light); });
 
 }
 
@@ -186,7 +186,7 @@ Commands::Status::Status(vector<unsigned int> status) {
 }
 
 string Commands::Status::Payload() {
-	return join<unsigned int>(_status, ";", [](unsigned int status) { return to_string(status); });
+	return join<unsigned int>(_status, " ; ", [](unsigned int status) { return to_string(status); });
 }
 
 
@@ -225,7 +225,7 @@ string Replies::Config::Payload() {
 	string payload;
 
 	for (auto& address : _addresses) {
-		payload += to_string(address.first) + " " + to_string(address.second) + "; ";
+		payload += to_string(address.first) + " " + to_string(address.second) + " ; ";
 	}
 
 	return payload;
@@ -242,7 +242,7 @@ Replies::StatusDifference::StatusDifference(vector<Value> status) {
 }
 
 string Replies::StatusDifference::Payload() {
-	return join<Value>(_status, ";", [](Value value) { return value.ToString(); });
+	return join<Value>(_status, " ; ", [](Value value) { return value.ToString(); });
 }
 
 vector<Value> Replies::StatusDifference::GetStatus() {
@@ -260,7 +260,7 @@ Replies::NotFound::NotFound(vector<Value> status) {
 }
 
 string Replies::NotFound::Payload() {
-	return join<Value>(_notFound, ";", [](Value value) { return value.ToString(); });
+	return join<Value>(_notFound, " ; ", [](Value value) { return value.ToString(); });
 }
 
 
@@ -280,7 +280,7 @@ Replies::UnknownVersion::UnknownVersion(vector<string> versions) {
 }
 
 string Replies::UnknownVersion::Payload() {
-	return join<string>(_versions, ";", [](string value) { return value; });
+	return join<string>(_versions, " ; ", [](string value) { return value; });
 }
 
 

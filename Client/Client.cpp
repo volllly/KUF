@@ -5,9 +5,16 @@
 #include "Protocol.h"
 #include "Interface.h"
 
+#include <conio.h>
+
 #include <iostream>
 
 #undef SHOWMESSAGE
+
+#define KEY_UP 72
+#define KEY_DOWN 80
+#define KEY_LEFT 75
+#define KEY_RIGHT 77
 
 using namespace std;
 
