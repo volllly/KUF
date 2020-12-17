@@ -83,6 +83,7 @@ int main(int argc, char* argv[])
 		shared_ptr<Reply> reply(nullptr);
 
 		string send;
+		shared_ptr<Command> command;
 		switch (state) {
 		case State::Idle:
 		{
@@ -97,11 +98,12 @@ int main(int argc, char* argv[])
 				return 0;
 			}
 
-			send = messageFactory.Command(read)->ToString();
+			command = messageFactory.Command(read);
+			send = command->ToString();
 			break;
 		}
 		case State::Configure:
-			send = Commands::Config().ToString();
+			send = Commands::Config(map<unsigned int, unsigned int>{ {1, 1} }).ToString();
 
 			status->Text()->append("\n> " + send.substr(0, send.length() - 2));
 			break;
@@ -128,6 +130,14 @@ int main(int argc, char* argv[])
 			reply = messageFactory.Reply(*receiver);
 			status->Text()->append("\n< " + reply->ToString().substr(0, reply->ToString().length() - 2));
 			switch (reply->StatusCode()) {
+			case StatusCode::DONE:
+				if (command->Cmd() == Cmd::SET) {
+					auto values = ((Commands::Set*)command.get())->GetValues();
+					for (auto& value : values) {
+						*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())) = value.GetValue().value();
+					}
+				}
+				break;
 			case StatusCode::VERSION:
 				if (((Replies::Version*)reply.get())->GetVersion() != "1") {
 					return 1;
@@ -142,12 +152,19 @@ int main(int argc, char* argv[])
 				auto values = ((Replies::StatusDifference*)reply.get())->GetStatus();
 
 				for (auto& value : values) {
-					*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())) = value.GetValue().value();
+					if (as_integer(value.GetColor().value()) < 7) {
+						*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())) = value.GetValue().value();
+					}
+					else {
+						for (int i = 0; i < 7; i++) {
+							*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + i) = -1;
+						}
+					}
 				}
 				break;
 			}
 			case StatusCode::CONFIG:
-				for (int i = 0; i < (signed)((Replies::Config*)reply.get())->GetConfig(); i++) {
+				for (int i = 0; i < (signed)((Replies::Config*)reply.get())->GetConfig().size(); i++) {
 					auto channel = make_unique<vector<shared_ptr<double>>>();
 					for (int j = 0; j < 7 * 4; j++) {
 						channel->push_back(make_shared<double>(0));
@@ -157,7 +174,7 @@ int main(int argc, char* argv[])
 
 				const string names[] = { "D", "R", "G", "B", "W", "A", "U" };
 
-				for (int i = ((Replies::Config*)reply.get())->GetConfig() - 1; i >= 0; i--) {
+				for (int i = ((Replies::Config*)reply.get())->GetConfig().size() - 1; i >= 0; i--) {
 					auto light = make_shared<Column>(vector<shared_ptr<Widget>>{}, "ring3", BorderSize::Double);
 
 					auto main = make_shared<vector<shared_ptr<Widget>>>();

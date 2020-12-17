@@ -68,7 +68,7 @@ void ServerCallbackHandler::DataReceived(const char *data, unsigned len)
 
   if (myComm) {
       if (strdata.find("config") != std::string::npos) {
-        std::string sent = std::string("211: 1\r\n");
+        std::string sent = std::string("211: 1 1; 2 25\r\n");
         myComm->WriteToPartner(sent.c_str(), sent.length() + 1);
       } else if (strdata.find("set") != std::string::npos) {
           strdata = strdata.substr(strdata.find(":") + 1, -1);

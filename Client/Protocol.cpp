@@ -164,6 +164,10 @@ string Commands::Set::Payload() {
 	return join<Value>(_values, ";", [](Value value) { return value.ToString(); });
 }
 
+vector<Value> Commands::Set::GetValues() {
+	return _values;
+}
+
 
 Commands::Reset::Reset(vector<unsigned int> lights) {
 	_cmd = Cmd::RESET;
@@ -186,8 +190,10 @@ string Commands::Status::Payload() {
 }
 
 
-Commands::Config::Config() {
+Commands::Config::Config(map<unsigned int, unsigned int> addresses) {
 	_cmd = Cmd::CONFIG;
+
+	_addresses = addresses;
 }
 
 
@@ -210,17 +216,23 @@ string Replies::Version::GetVersion() {
 	return _version;
 }
 
-Replies::Config::Config(unsigned int lights) {
+Replies::Config::Config(map<unsigned int, unsigned int> addresses) {
 	_statusCode = StatusCode::CONFIG;
-	_lights = lights;
+	_addresses = addresses;
 }
 
 string Replies::Config::Payload() {
-	return to_string(_lights);
+	string payload;
+
+	for (auto& address : _addresses) {
+		payload += to_string(address.first) + " " + to_string(address.second) + "; ";
+	}
+
+	return payload;
 }
 
-unsigned int Replies::Config::GetConfig() {
-	return _lights;
+map<unsigned int, unsigned int> Replies::Config::GetConfig() {
+	return _addresses;
 }
 
 
@@ -348,7 +360,7 @@ shared_ptr<Command> MessageFactory::Command(string from) {
 		return Commands::Version::Parse();
 		break;
 	case Cmd::CONFIG:
-		return Commands::Config::Parse();
+		return Commands::Config::Parse(rest);
 		break;
 	case Cmd::SET:
 		return Commands::Set::Parse(rest);
@@ -372,7 +384,22 @@ shared_ptr<Replies::Version> Replies::Version::Parse(string from) {
 }
 
 shared_ptr<Replies::Config> Replies::Config::Parse(string from) {
-	return make_shared<Config>(stoul(from));
+	auto splitFrom = split(from, ";");
+	auto addresses = map<unsigned int, unsigned int>{};
+
+	for (auto& address : splitFrom) {
+		smatch statusCodeMatch;
+
+		if (!regex_match(address, statusCodeMatch, regex("([0-9]+) *([0-9]+)"))) {
+			throw "could not find StatusCode";
+		}
+
+		auto key = (unsigned int)stoul(statusCodeMatch[1].str());
+		auto value = (unsigned int)stoul(statusCodeMatch[2].str());
+
+		addresses[key] = value;
+	}
+	return make_shared<Config>(addresses);
 }
 
 shared_ptr<Replies::StatusDifference> Replies::StatusDifference::Parse(string from) {
@@ -431,8 +458,23 @@ shared_ptr<Commands::Connect> Commands::Connect::Parse(string from) {
 
 }
 
-shared_ptr<Commands::Config> Commands::Config::Parse() {
-	return make_shared<Config>();
+shared_ptr<Commands::Config> Commands::Config::Parse(string from) {
+	auto splitFrom = split(from, ";");
+	auto addresses = map<unsigned int, unsigned int>{};
+
+	for (auto& address : splitFrom) {
+		smatch statusCodeMatch;
+
+		if (!regex_match(from, statusCodeMatch, regex("([0-9]+) *([0-9]+)"))) {
+			throw "could not find StatusCode";
+		}
+
+		auto key = (unsigned int)stoul(statusCodeMatch[1].str());
+		auto value = (unsigned int)stoul(statusCodeMatch[2].str());
+
+		addresses[key] = value;
+	}
+	return make_shared<Config>(addresses);
 }
 
 shared_ptr<Commands::Set> Commands::Set::Parse(string from) {

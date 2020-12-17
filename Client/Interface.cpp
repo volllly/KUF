@@ -289,13 +289,22 @@ void Fader::DrawContent(short int x, short int y) {
 		cout << '=';
 	}
 
-	ostringstream fmts;
-	fmts << setprecision(InnerWidth() - 1) << value;
-	string fmt = fmts.str();
+	if (value >= 0) {
+		ostringstream fmts;
+		fmts << setprecision(InnerWidth() - 1) << value;
+		string fmt = fmts.str();
 
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x + ((short)InnerWidth() - (short)fmt.length()) / 2, y + (short)InnerHeight() - 1 });
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x + ((short)InnerWidth() - (short)fmt.length()) / 2, y + (short)InnerHeight() - 1 });
 
-	cout << fmt;
+		cout << fmt;
+	}
+	else {
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ center - (width - 1) / 2, y + (short)InnerHeight() - 1 });
+		for (short j = 0; j < width; j++) {
+			cout << '-';
+		}
+	}
+
 
 	unsigned int bar = (unsigned int)(min(value / _max, 1) * 8 * (InnerHeight() - 3));
 
