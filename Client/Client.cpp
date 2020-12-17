@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
 				if (command->Cmd() == Cmd::SET) {
 					auto values = ((Commands::Set*)command.get())->GetValues();
 					for (auto& value : values) {
-						*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())) = value.GetValue().value();
+						*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 6 + as_integer(value.GetColor().value())) = value.GetValue().value();
 					}
 				}
 				break;
@@ -152,12 +152,12 @@ int main(int argc, char* argv[])
 				auto values = ((Replies::StatusDifference*)reply.get())->GetStatus();
 
 				for (auto& value : values) {
-					if (as_integer(value.GetColor().value()) < 7) {
-						*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + as_integer(value.GetColor().value())) = value.GetValue().value();
+					if (as_integer(value.GetColor().value()) < 6) {
+						*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 6 + as_integer(value.GetColor().value())) = value.GetValue().value();
 					}
 					else {
-						for (int i = 0; i < 7; i++) {
-							*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 7 + i) = -1;
+						for (int i = 0; i < 6; i++) {
+							*channels[value.GetLight() - 1]->at(as_integer(value.GetRing().value()) * 6 + i) = -1;
 						}
 					}
 				}
@@ -166,13 +166,13 @@ int main(int argc, char* argv[])
 			case StatusCode::CONFIG:
 				for (int i = 0; i < (signed)((Replies::Config*)reply.get())->GetConfig().size(); i++) {
 					auto channel = make_unique<vector<shared_ptr<double>>>();
-					for (int j = 0; j < 7 * 4; j++) {
+					for (int j = 0; j < 6 * 4; j++) {
 						channel->push_back(make_shared<double>(0));
 					}
 					channels.push_back(move(channel));
 				}
 
-				const string names[] = { "D", "R", "G", "B", "W", "A", "U" };
+				const string names[] = { "R", "G", "B", "W", "A", "U" };
 
 				for (int i = ((Replies::Config*)reply.get())->GetConfig().size() - 1; i >= 0; i--) {
 					auto light = make_shared<Column>(vector<shared_ptr<Widget>>{}, "ring3", BorderSize::Double);
@@ -182,11 +182,11 @@ int main(int argc, char* argv[])
 					auto ring2 = make_shared<vector<shared_ptr<Widget>>>();
 					auto ring3 = make_shared<vector<shared_ptr<Widget>>>();
 
-					for (int j = 0; j < 7; j++) {
-						main->push_back(make_shared<Fader>(channels[i]->at(j), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
-						ring1->push_back(make_shared<Fader>(channels[i]->at(j + 7), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
-						ring2->push_back(make_shared<Fader>(channels[i]->at(j + 7 * 2), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
-						ring3->push_back(make_shared<Fader>(channels[i]->at(j + 7 * 3), string(names[j % 7]), j % 7 ? BorderSize::Dashed : BorderSize::None, 4, 6, 100));
+					for (int j = 0; j < 6; j++) {
+						main->push_back(make_shared<Fader>(channels[i]->at(j), string(names[j % 6]), BorderSize::Dashed, 4, 6, 100));
+						ring1->push_back(make_shared<Fader>(channels[i]->at(j + 6), string(names[j % 6]), BorderSize::Dashed, 4, 6, 100));
+						ring2->push_back(make_shared<Fader>(channels[i]->at(j + 6 * 2), string(names[j % 6]), BorderSize::Dashed, 4, 6, 100));
+						ring3->push_back(make_shared<Fader>(channels[i]->at(j + 6 * 3), string(names[j % 6]), BorderSize::Dashed, 4, 6, 100));
 					}
 
 					rings->insert(rings->begin(), make_shared<Column>(initializer_list<shared_ptr<Widget>> {

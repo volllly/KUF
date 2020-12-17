@@ -22,7 +22,6 @@ const map<Ring, string> RingAttributes {
 };
 
 enum class Color {
-	DIMM,
 	RED,
 	GREEN,
 	BLUE,
@@ -45,7 +44,6 @@ enum class Color {
 	PINK,
 };
 const map<Color, string> ColorAttributes {
-	{Color::DIMM,			"dimm"},
 	{Color::RED,			"red"},
 	{Color::GREEN,			"green"},
 	{Color::BLUE,			"blue"},
