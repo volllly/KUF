@@ -42,6 +42,7 @@ enum class Color {
 	HELLBLAU,
 	DUNKELBLAU,
 	PINK,
+	REGENBOGEN
 };
 const map<Color, string> ColorAttributes {
 	{Color::RED,			"red"},
@@ -64,6 +65,7 @@ const map<Color, string> ColorAttributes {
 	{Color::HELLBLAU,		"hellblau"},
 	{Color::DUNKELBLAU,		"dunkelblau"},
 	{Color::PINK,			"pink"},
+	{Color::REGENBOGEN,		"regenbogen"}	
 };
 
 enum class StatusCode {

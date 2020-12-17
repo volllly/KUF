@@ -23,7 +23,7 @@ template <typename T, typename U> T parseEnum(U from, map<T, U> Attributes) {
 		}
 	}
 
-	throw "Enum value not found";
+	throw exception("Enum value not found");
 }
 
 string trim(const string& s)
@@ -77,7 +77,7 @@ Value::Value(string from) {
 
 
 	if (!regex_match(from, valueMatch, regex("^(\\d*)(?: +(\\w*)(?: +(\\w*)(?: +(\\d*(?:\\.\\d*)?))?)?)?(?:.*)"))) {
-		throw "could not parse values";
+		throw exception("could not parse values");
 	}
 
 	_light = stoul(valueMatch[1].str());
@@ -299,7 +299,7 @@ shared_ptr<Reply> MessageFactory::Reply(string from) {
 	from = from.substr(0, from.find("\r\n"));
 
 	if (!regex_match(from, statusCodeMatch, regex("([0-9]{3})(?: *: *(.*))?"))) { //^([0-9]{3})(?: *: *(.*))?
-		throw "could not find StatusCode";
+		throw exception("could not find StatusCode");
 	}
 
 	auto statusCode = parseEnum((unsigned int)stoul(statusCodeMatch[1].str()), StatusCodeAttributes);
@@ -335,7 +335,7 @@ shared_ptr<Reply> MessageFactory::Reply(string from) {
 		return Replies::Internal::Parse(rest);
 		break;
 	default:
-		throw;
+		throw exception();
 	}
 }
 
@@ -345,7 +345,7 @@ shared_ptr<Command> MessageFactory::Command(string from) {
 	from = from.substr(0, from.find("\r\n"));
 
 	if (!regex_match(from, cmdMatch, regex("^([a-z]*)(?: *: *(.*))?"))) {
-		throw "could not find command";
+		throw exception("could not find command");
 	}
 
 	auto cmd = parseEnum(cmdMatch[1].str(), CmdAttributes);
@@ -371,7 +371,7 @@ shared_ptr<Command> MessageFactory::Command(string from) {
 	case Cmd::STATUS:
 		return Commands::Status::Parse(rest);
 	default:
-		throw;
+		throw exception();
 	}
 }
 
@@ -391,7 +391,7 @@ shared_ptr<Replies::Config> Replies::Config::Parse(string from) {
 		smatch statusCodeMatch;
 
 		if (!regex_match(address, statusCodeMatch, regex("([0-9]+) *([0-9]+)"))) {
-			throw "could not find StatusCode";
+			throw exception("could not find StatusCode");
 		}
 
 		auto key = (unsigned int)stoul(statusCodeMatch[1].str());
@@ -466,7 +466,7 @@ shared_ptr<Commands::Config> Commands::Config::Parse(string from) {
 		smatch statusCodeMatch;
 
 		if (!regex_match(from, statusCodeMatch, regex("([0-9]+) *([0-9]+)"))) {
-			throw "could not find StatusCode";
+			throw exception("could not find StatusCode");
 		}
 
 		auto key = (unsigned int)stoul(statusCodeMatch[1].str());

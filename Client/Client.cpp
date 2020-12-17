@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 
-	unsigned short serverPort = 8000;
+	unsigned short serverPort = 49191;
 	const char* servername = nullptr;
 
 	// expect client to connect to as argument
@@ -51,17 +51,17 @@ int main(int argc, char* argv[])
 
 	vector<unique_ptr<vector<shared_ptr<double>>>> channels {};
 
-	auto status = make_shared<TextBox>("", "log", BorderSize::Double, 84, 6);
+	auto status = make_shared<TextBox>("", "log", BorderSize::Double, 76, 6);
 
 
-	auto input = make_shared<TextBox>("", shared_ptr<string>({}), BorderSize::Single, 84, 1);
+	auto input = make_shared<TextBox>("", shared_ptr<string>({}), BorderSize::Single, 76, 1);
 
 	auto rings = make_shared<vector<shared_ptr<Widget>>>(initializer_list<shared_ptr<Widget>> {
 		status,
 		input
 	});
 
-	Interface tui(Column(rings, shared_ptr<string>({}), BorderSize::None));
+	Interface tui((shared_ptr<Widget>)make_shared<Column>(rings, shared_ptr<string>({}), BorderSize::None));
 	
 	if (!res) {
 		cerr << "error connecting;" << endl;
@@ -78,6 +78,7 @@ int main(int argc, char* argv[])
 
 
 	for (;;) {
+		input->Text()->clear();
 		tui.Draw();
 
 		shared_ptr<Reply> reply(nullptr);
@@ -91,14 +92,29 @@ int main(int argc, char* argv[])
 
 			auto read = *input->Text();
 
-			status->Text()->append("\n> " + read);
 
 			if (read.find("quit") == 0) {
 				comm.Disconnect();
 				return 0;
 			}
 
-			command = messageFactory.Command(read);
+			try {
+				command = messageFactory.Command(read);
+				auto tostr = command->ToString();
+				status->Text()->append("\n> " + tostr.substr(0, tostr.length() - 2));
+			}
+			catch(const exception &e) {
+				status->Text()->append("\n| " + read);
+				status->Text()->append("\nx ");
+				status->Text()->append(e.what());
+				continue;
+			}
+			catch (...) {
+				status->Text()->append("\n| " + read);
+				status->Text()->append("\nx Error reading command");
+				continue;
+			}
+
 			send = command->ToString();
 			break;
 		}
@@ -127,7 +143,22 @@ int main(int argc, char* argv[])
 				}
 				continue;
 			}
-			reply = messageFactory.Reply(*receiver);
+
+			try {
+				reply = messageFactory.Reply(*receiver);
+			}
+			catch (const exception& e) {
+				status->Text()->append("\n| " + *receiver);
+				status->Text()->append("\nx ");
+				status->Text()->append(e.what());
+				continue;
+			}
+			catch (...) {
+				status->Text()->append("\n| " + *receiver);
+				status->Text()->append("\nx Error reading reply");
+				continue;
+			}
+
 			status->Text()->append("\n< " + reply->ToString().substr(0, reply->ToString().length() - 2));
 			switch (reply->StatusCode()) {
 			case StatusCode::DONE:
@@ -205,7 +236,6 @@ int main(int argc, char* argv[])
 				break;
 			}
 		}
-		input->Text()->clear();
 	}
 }
 

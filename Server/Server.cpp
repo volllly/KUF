@@ -11,7 +11,7 @@ int main()
 {
     std::cout << "Hello World!\n";
 
-    unsigned short serverPort = 8000;
+    unsigned short serverPort = 49191;
 
     ServerCallbackHandler *serverCallbackHandler = new ServerCallbackHandler();
     std::shared_ptr<CommCallbacks> myCallbackHandler(serverCallbackHandler);
