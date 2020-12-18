@@ -86,6 +86,39 @@ Interface::Interface(shared_ptr<Widget> widget) {
 	_widget = widget;
 }
 
+void Interface::Run() {
+	_current = _widget;
+	auto _this = shared_from_this();
+	Draw();
+
+	/*char input;
+	while (cin >> input) {
+		switch (input)
+		{
+		case 'h':
+			_widget->Navigate(Navigation::Left,  _this);
+			break;
+		case 'l':
+			_widget->Navigate(Navigation::Right, _this);
+			break;
+		case 'j':
+			_widget->Navigate(Navigation::Down, _this);
+			break;
+		case 'k':
+			_widget->Navigate(Navigation::Up, _this);
+			break;
+		case '\n':
+			_widget->Navigate(Navigation::In, _this);
+			break;
+		case ' ':
+			_widget->Navigate(Navigation::Out, _this);
+			break;
+		default:
+			break;
+		}
+	}*/
+}
+
 void Interface::Draw() {
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
@@ -126,6 +159,26 @@ Row::Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> titl
 	_widgets = widgets;
 }
 
+void Row::Navigate(Navigation direction) {
+		switch (direction) {
+	case Navigation::Left:
+		if (_active == 0) {
+			_active = _widgets->size() + 1;
+		}
+		_active--;
+		break;
+	case Navigation::Right:
+		_active++;
+		if (_active < _widgets->size()) {
+			_active = 0;
+		}
+		break;
+	case Navigation::In:
+		_widgets->at(_active)->Navigate(direction);
+		break;
+	}
+}
+
 void Row::DrawContent(short int x, short int y) {
 	unsigned int width = x;
 	for (auto& widget : *_widgets) {
@@ -158,6 +211,30 @@ Column::Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string
 	_widgets = widgets;
 }
 
+void Column::Navigate(Navigation direction) {
+	_active = 0;
+	char c;
+
+	while (cin.get(c)) {
+		switch (c) {
+		case 'j':
+			if (_active == 0) {
+				_active = _widgets->size() + 1;
+			}
+			_active--;
+			break;
+		case 'k':
+			_active++;
+			if (_active < _widgets->size()) {
+				_active = 0;
+			}
+			break;
+		case '\n':
+			_widgets->at(_active)->Navigate(direction);
+			break;
+		}
+	}
+}
 void Column::DrawContent(short int x, short int y) {
 	unsigned int height = y;
 	for (auto& widget : *_widgets) {
@@ -230,7 +307,7 @@ shared_ptr<string> TextBox::Text() {
 	return _text;
 }
 
-void TextBox::Focus() {
+void TextBox::Navigate(Navigation direction) {
 	CONSOLE_CURSOR_INFO cursor {
 		1,
 		true

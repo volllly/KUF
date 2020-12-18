@@ -196,6 +196,15 @@ Commands::Config::Config(map<unsigned int, unsigned int> addresses) {
 	_addresses = addresses;
 }
 
+string Commands::Config::Payload() {
+	string payload;
+
+	for (auto&& address : _addresses) {
+		payload += to_string(address.first) + " " + to_string(address.second) + " ; ";
+	}
+
+	return payload;
+}
 
 
 Replies::Done::Done() {
@@ -306,6 +315,12 @@ shared_ptr<Reply> MessageFactory::Reply(string from) {
 
 	auto rest = trim(statusCodeMatch[2].str());
 
+	if (statusCode != StatusCode::DONE) {
+		if (rest.size() == 0) {
+			throw exception("No payload provided");
+		}
+	}
+
 	switch (statusCode) {
 	case StatusCode::DONE:
 		return Replies::Done::Parse();
@@ -390,8 +405,8 @@ shared_ptr<Replies::Config> Replies::Config::Parse(string from) {
 	for (auto& address : splitFrom) {
 		smatch statusCodeMatch;
 
-		if (!regex_match(address, statusCodeMatch, regex("([0-9]+) *([0-9]+)"))) {
-			throw exception("could not find StatusCode");
+		if (!regex_match(address, statusCodeMatch, regex("([0-9]+) +([0-9]+)"))) {
+			throw exception("could not parse address pair");
 		}
 
 		auto key = (unsigned int)stoul(statusCodeMatch[1].str());
@@ -465,8 +480,8 @@ shared_ptr<Commands::Config> Commands::Config::Parse(string from) {
 	for (auto& address : splitFrom) {
 		smatch statusCodeMatch;
 
-		if (!regex_match(from, statusCodeMatch, regex("([0-9]+) *([0-9]+)"))) {
-			throw exception("could not find StatusCode");
+		if (!regex_match(address, statusCodeMatch, regex("([0-9]+) +([0-9]+)"))) {
+			throw exception("could not parse address pair");
 		}
 
 		auto key = (unsigned int)stoul(statusCodeMatch[1].str());

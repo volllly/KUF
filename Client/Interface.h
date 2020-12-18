@@ -8,6 +8,15 @@
 
 using namespace std;
 
+enum class Navigation {
+	Left,
+	Right,
+	Up,
+	Down,
+	In,
+	Out
+};
+
 enum class BorderSize {
 	None,
 	Dotted,
@@ -81,20 +90,24 @@ public:
 
 	void Draw(short int x, short int y);
 	virtual void Clear(short int x, short int y);
-	virtual void Focus() {}
+	virtual void Navigate(Navigation direction) {}
 };
 
 
-class Interface
+class Interface : public enable_shared_from_this<Interface>
 {
 private:
 	shared_ptr<Widget> _widget;
+	shared_ptr<Widget> _current;
+
 public:
 	Interface(shared_ptr<Widget> widget);
 	template <class T>
 	Interface(T&& widget) : Interface((shared_ptr<Widget>)make_shared<T>(widget)) {}
 
-	void Draw();
+	void Draw(); //TODO: make private
+
+	void Run();
 };
 
 class Container : public Widget {
@@ -108,6 +121,7 @@ public:
 class Row : public Container {
 private:
 	shared_ptr<vector<shared_ptr<Widget>>> _widgets;
+	unsigned int _active;
 
 	unsigned int InnerHeight();
 	unsigned int InnerWidth();
@@ -119,11 +133,14 @@ public:
 	Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, string&& title, BorderSize border) : Row(widgets, make_shared<string>(title), border) {}
 
 	Row(vector<shared_ptr<Widget>>&& widgets, string&& title, BorderSize border) : Row(move(widgets), make_shared<string>(title), border) {}
+	
+	void Navigate(Navigation direction);
 };
 
 class Column : public Container {
 private:
 	shared_ptr<vector<shared_ptr<Widget>>> _widgets;
+	unsigned int _active;
 
 	unsigned int InnerHeight();
 	unsigned int InnerWidth();
@@ -136,6 +153,7 @@ public:
 
 	Column(vector<shared_ptr<Widget>>&& widgets, string title, BorderSize border) : Column(move(widgets), make_shared<string>(title), border) {}
 
+	void Navigate(Navigation direction);
 };
 
 
@@ -162,7 +180,7 @@ public:
 
 	shared_ptr<string> Text();
 
-	void Focus();
+	void Navigate(Navigation direction);
 };
 
 class Fader : public Widget {
@@ -186,6 +204,7 @@ public:
 	
 	Fader(double&& value, string&& title, BorderSize border, unsigned int width, unsigned int height, double max) : Fader(move(value), make_shared<string>(move(title)), border, width, height, max) {}
 
+	//void Navigate(Navigation direction, shared_ptr<Interface> interface);
 
 	shared_ptr<double> Value();
 };

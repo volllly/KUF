@@ -28,22 +28,7 @@ enum class Color {
 	WHITE,
 	AMBER,
 	UV,
-	GELB,
-	MAGENTA,
-	CYAN,
-	DUNKELORANGE,
-	GRÜNGELB,
-	LACHS,
-	TÜRKIS,
-	HELLGRÜN,
-	ORANGE,
-	STROHGELB,
-	LAVENDEL,
-	HELLBLAU,
-	DUNKELBLAU,
-	PINK,
-	REGENBOGEN,
-	KEINE
+	STROBE
 };
 const map<Color, string> ColorAttributes {
 	{Color::RED,			"red"},
@@ -52,22 +37,7 @@ const map<Color, string> ColorAttributes {
 	{Color::WHITE,			"white"},
 	{Color::AMBER,			"amber"},
 	{Color::UV,				"uv"},
-	{Color::GELB,			"gelb"},
-	{Color::MAGENTA,		"magenta"},
-	{Color::CYAN,			"cyan"},
-	{Color::DUNKELORANGE,	"dunkelorange"},
-	{Color::GRÜNGELB,		"gruengelb"},
-	{Color::LACHS,			"lachs"},
-	{Color::TÜRKIS,			"tuerkis"},
-	{Color::HELLGRÜN,		"hellgruen"},
-	{Color::ORANGE,			"orange"},
-	{Color::STROHGELB,		"strohgelb"},
-	{Color::LAVENDEL,		"lavendel"},
-	{Color::HELLBLAU,		"hellblau"},
-	{Color::DUNKELBLAU,		"dunkelblau"},
-	{Color::PINK,			"pink"},
-	{Color::REGENBOGEN,		"regenbogen"},
-	{Color::KEINE,			"keine"}
+	{Color::STROBE,			"strobe"}
 };
 
 enum class StatusCode {
@@ -220,7 +190,8 @@ namespace Commands {
 	class Config : public Command
 	{
 		map<unsigned int, unsigned int> _addresses;
-
+	private:
+		string Payload();
 	public:
 		Config(map<unsigned int, unsigned int> addresses);
 		static shared_ptr<Config> Parse(string from);

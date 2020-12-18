@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 
-	unsigned short serverPort = 49191;
+	unsigned short serverPort = 8000;
 	const char* servername = nullptr;
 
 	// expect client to connect to as argument
@@ -76,7 +76,6 @@ int main(int argc, char* argv[])
 
 	enum class State {
 		Connect,
-		Configure,
 		Idle
 	};
 	auto state = State::Connect;
@@ -95,7 +94,7 @@ int main(int argc, char* argv[])
 		switch (state) {
 		case State::Idle:
 		{
-			input->Focus();
+			input->Navigate(Navigation::In);
 
 			auto read = *input->Text();
 
@@ -125,11 +124,6 @@ int main(int argc, char* argv[])
 			send = command->ToString();
 			break;
 		}
-		case State::Configure:
-			send = Commands::Config(map<unsigned int, unsigned int>{ {1, 1} }).ToString();
-
-			status->Text()->append("\n> " + send.substr(0, send.length() - 2));
-			break;
 		case State::Connect:
 			send = Commands::Connect().ToString();
 
@@ -181,7 +175,7 @@ int main(int argc, char* argv[])
 					return 1;
 				}
 				if (state == State::Connect) {
-					state = State::Configure;
+					state = State::Idle;
 				}
 				break;
 			case StatusCode::STATUS:
