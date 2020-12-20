@@ -3,6 +3,7 @@
 #include <numeric>
 #include <functional>
 #include <regex>
+#include <stdexcept>
 
 template <typename T> string join(vector<T> vector, string separator, function<string(T)> f, bool space = true) {
 	string accumulator = "";
@@ -23,7 +24,7 @@ template <typename T, typename U> T parseEnum(U from, map<T, U> Attributes) {
 		}
 	}
 
-	throw exception("Enum value not found");
+	throw runtime_error("Enum value not found: " + from);
 }
 
 string trim(const string& s)
@@ -36,7 +37,7 @@ string trim(const string& s)
 vector<string> split(const string& s, string at) {
 	vector<string> v {};
 
-	auto rest = s;
+	string rest = s;
 	for (;;) {
 		auto found = rest.find_first_of(at);
 		auto sub = rest.substr(0, found);
@@ -422,7 +423,10 @@ shared_ptr<Replies::StatusDifference> Replies::StatusDifference::Parse(string fr
 	vector<Value> values;
 
 	for (auto& value : splitFrom) {
-		values.push_back(move(Value(value)));
+		try {
+			values.push_back(move(Value(value)));
+		}
+		catch (...) {}
 	}
 
 	return make_shared<StatusDifference>(values);
@@ -433,7 +437,10 @@ shared_ptr<Replies::Status> Replies::Status::Parse(string from) {
 	vector<Value> values;
 
 	for (auto& value : splitFrom) {
-		values.push_back(Value(move(value)));
+		try {
+			values.push_back(Value(move(value)));
+		}
+		catch (...) {}
 	}
 
 	return make_shared<Status>(values);

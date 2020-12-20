@@ -12,32 +12,34 @@ enum class Ring {
 	MAIN,
 	RING1,
 	RING2,
-	RING3
+	RING3,
+	RING
 };
 const map<Ring, string> RingAttributes {
 	{Ring::MAIN,  "main"},
 	{Ring::RING1, "ring1"},
 	{Ring::RING2, "ring2"},
 	{Ring::RING3, "ring3"},
+	{Ring::RING, "ring"},
 };
 
 enum class Color {
+	STROBE,
 	RED,
 	GREEN,
 	BLUE,
 	WHITE,
 	AMBER,
 	UV,
-	STROBE
 };
-const map<Color, string> ColorAttributes {
+const map<Color, string> ColorAttributes{
 	{Color::RED,			"red"},
 	{Color::GREEN,			"green"},
 	{Color::BLUE,			"blue"},
 	{Color::WHITE,			"white"},
 	{Color::AMBER,			"amber"},
 	{Color::UV,				"uv"},
-	{Color::STROBE,			"strobe"}
+	{Color::STROBE,			"strobe"},
 };
 
 enum class StatusCode {

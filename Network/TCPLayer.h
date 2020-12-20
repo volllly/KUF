@@ -81,7 +81,7 @@ class TCPLayer
     char *TCPHost;
 
     // the telegram buffer
-#define TELEGRAMBUFLEN 256
+#define TELEGRAMBUFLEN 1024
     char telegramBuf[TELEGRAMBUFLEN];
 
     SOCKET TCP_SSock;

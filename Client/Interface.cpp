@@ -5,6 +5,7 @@
 
 #include <io.h>
 #include <fcntl.h>
+#include <conio.h>
 
 Widget::Widget(shared_ptr<string> title, BorderSize border) {
 	_border = border;
@@ -13,9 +14,15 @@ Widget::Widget(shared_ptr<string> title, BorderSize border) {
 
 
 void Widget::DrawBorder(short int x, short int y) {
-	if (_border != BorderSize::None) {
+	auto border = _border;
+
+	if (GetActivated()) {
+		border = BorderSize::Dotted;
+	}
+
+	if (border != BorderSize::None) {
 		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x, y });
-		auto symbols = BorderAttributes.at(_border);
+		auto symbols = BorderAttributes.at(border);
 
 		cout << symbols.tl;
 		for (unsigned int i = 0; i < InnerWidth(); i++) {
@@ -40,9 +47,21 @@ void Widget::DrawBorder(short int x, short int y) {
 		cout << symbols.br;
 	}
 
-	if (_title) {
+	if (_title || GetSelected()) {
+		string title;
+		if (_title) {
+			title = *_title;
+		}
+		else {
+			title = "";
+		}
+
+		if (GetSelected()) {
+			title = "*" + title;
+		}
+
 		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ x + 1, y });
-		cout << *_title;
+		cout << title;
 	}
 }
 
@@ -56,10 +75,10 @@ void Widget::Clear(short int x, short int y) {
 }
 
 void Widget::Draw(short int x, short int y) {
-	Clear(x, y);
+	//Clear(x, y);
 	DrawBorder(x, y);
-	auto marginX = (_border != BorderSize::None ? 1 : 0);
-	auto marginY = (_border != BorderSize::None || _title ? 1 : 0);
+	auto marginX = (GetActivated() || _border != BorderSize::None) ? 1 : 0;
+	auto marginY = (GetActivated() || _border != BorderSize::None) || (_title || GetSelected()) ? 1 : 0;
 	DrawContent(x + marginX, y + marginY);
 }
 unsigned int Widget::InnerWidth() {
@@ -70,12 +89,12 @@ unsigned int Widget::InnerHeight() {
 }
 
 unsigned int Widget::Width() {
-	return InnerWidth() + (_border != BorderSize::None ? 2 : 0);
+	return InnerWidth() + (GetActivated() || _border != BorderSize::None ? 2 : 0);
 }
 
 unsigned int Widget::Height() {
-	auto margin = _title ? 1 : 0; 
-	if(_border != BorderSize::None) {
+	auto margin = _title || GetSelected() ? 1 : 0;
+	if(GetActivated() || _border != BorderSize::None) {
 		margin = 2;
 	}
 
@@ -87,39 +106,63 @@ Interface::Interface(shared_ptr<Widget> widget) {
 }
 
 void Interface::Run() {
-	_current = _widget;
-	auto _this = shared_from_this();
+	_current = {};
+
+	StepIn(_widget);
 	Draw();
 
-	/*char input;
-	while (cin >> input) {
+	char input;
+	while (input = _getch()) {
 		switch (input)
 		{
 		case 'h':
-			_widget->Navigate(Navigation::Left,  _this);
+			_current.back()->Navigate(Navigation::Left, shared_from_this());
 			break;
 		case 'l':
-			_widget->Navigate(Navigation::Right, _this);
+			_current.back()->Navigate(Navigation::Right, shared_from_this());
 			break;
 		case 'j':
-			_widget->Navigate(Navigation::Down, _this);
+			_current.back()->Navigate(Navigation::Down, shared_from_this());
 			break;
 		case 'k':
-			_widget->Navigate(Navigation::Up, _this);
+			_current.back()->Navigate(Navigation::Up, shared_from_this());
 			break;
-		case '\n':
-			_widget->Navigate(Navigation::In, _this);
+		case 'i':
+			_current.back()->Navigate(Navigation::In, shared_from_this());
 			break;
-		case ' ':
-			_widget->Navigate(Navigation::Out, _this);
+		case 'o':
+			_current.back()->Navigate(Navigation::Out, shared_from_this());
 			break;
+		case 'q':
+			return;
 		default:
 			break;
 		}
-	}*/
+		Draw();
+	}
+}
+
+void Interface::StepIn(shared_ptr<Widget> in) {
+	if (_current.size() > 0) {
+		_current.back()->SetActivated(false);
+	}
+	_current.push_back(in);
+	in->SetActivated(true);
+	in->Navigate(Navigation::Activate, shared_from_this());
+}
+
+void Interface::StepOut() {
+	if (_current.size() > 1) {
+		_current.back()->SetActivated(false);
+		_current.pop_back();
+		_current.back()->SetActivated(true);
+		_current.back()->Navigate(Navigation::Deactivate, shared_from_this());
+	}
 }
 
 void Interface::Draw() {
+	cout.sync_with_stdio(false);
+	system("cls");
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 
@@ -138,11 +181,13 @@ void Interface::Draw() {
 	}
 
 	_widget->Draw(x, y);
+	cout.sync_with_stdio(true);
+	cout.flush();
 }
 
 
 void Container::Clear(short int x, short int y) {
-	if (!_title) { return; }
+	if (!(_title || GetSelected())) { return; }
 
 	for (unsigned int j = 0; j < InnerHeight(); j++) {
 		for (unsigned int i = 0; i < InnerWidth(); i++) {
@@ -155,27 +200,59 @@ void Container::Clear(short int x, short int y) {
 	}
 }
 
-Row::Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
-	_widgets = widgets;
+void Row::Updated() {
+	_active = 0;
+
+	for (unsigned int i = 0; i < _widgets->size(); i++) {
+		_widgets->at(i)->SetSelected(i == _active);
+	}
 }
 
-void Row::Navigate(Navigation direction) {
-		switch (direction) {
+Row::Row(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
+	_widgets = widgets;
+	_active = 0;
+}
+
+void Row::Navigate(Navigation direction, shared_ptr<Interface> ifce) {
+	switch (direction) {
 	case Navigation::Left:
+		_widgets->at(_active)->SetSelected(false);
 		if (_active == 0) {
-			_active = _widgets->size() + 1;
+			_active = _widgets->size();
 		}
 		_active--;
+		_widgets->at(_active)->SetSelected(true);
 		break;
 	case Navigation::Right:
+		_widgets->at(_active)->SetSelected(false);
 		_active++;
-		if (_active < _widgets->size()) {
+		if (_active >= _widgets->size()) {
 			_active = 0;
 		}
+		_widgets->at(_active)->SetSelected(true);
 		break;
 	case Navigation::In:
-		_widgets->at(_active)->Navigate(direction);
+		_widgets->at(_active)->SetSelected(false);
+		ifce->StepIn(_widgets->at(_active));
 		break;
+	case Navigation::Activate:
+		if (_widgets->size() == 1) {
+			_widgets->at(_active)->SetSelected(false);
+			ifce->StepIn(_widgets->at(0));
+		}
+		break;
+	case Navigation::Out:
+		_widgets->at(_active)->SetSelected(false);
+		ifce->StepOut();
+		break;
+	}
+}
+
+void Row::SetActivated(bool activated) {
+	_activated = activated;
+	//_active = 0;
+	if (activated) {
+		_widgets->at(_active)->SetSelected(true);
 	}
 }
 
@@ -209,32 +286,60 @@ unsigned int Row::InnerHeight() {
 
 Column::Column(shared_ptr<vector<shared_ptr<Widget>>> widgets, shared_ptr<string> title, BorderSize border) : Container(title, border) {
 	_widgets = widgets;
+	_active = 0;
 }
 
-void Column::Navigate(Navigation direction) {
-	_active = 0;
-	char c;
-
-	while (cin.get(c)) {
-		switch (c) {
-		case 'j':
-			if (_active == 0) {
-				_active = _widgets->size() + 1;
-			}
-			_active--;
-			break;
-		case 'k':
-			_active++;
-			if (_active < _widgets->size()) {
-				_active = 0;
-			}
-			break;
-		case '\n':
-			_widgets->at(_active)->Navigate(direction);
-			break;
+void Column::Navigate(Navigation direction, shared_ptr<Interface> ifce) {
+	switch (direction) {
+	case Navigation::Up:
+		_widgets->at(_active)->SetSelected(false);
+		if (_active == 0) {
+			_active = _widgets->size();
 		}
+		_active--;
+		_widgets->at(_active)->SetSelected(true);
+		break;
+	case Navigation::Down:
+		_widgets->at(_active)->SetSelected(false);
+		_active++;
+		if (_active >= _widgets->size()) {
+			_active = 0;
+		}
+		_widgets->at(_active)->SetSelected(true);
+		break;
+	case Navigation::In:
+		_widgets->at(_active)->SetSelected(false);
+		ifce->StepIn(_widgets->at(_active));
+		break;
+	case Navigation::Activate:
+		if (_widgets->size() == 1) {
+			_widgets->at(_active)->SetSelected(false);
+			ifce->StepIn(_widgets->at(0));
+		}
+		break;
+	case Navigation::Out:
+		_widgets->at(_active)->SetSelected(false);
+		ifce->StepOut();
+		break;
 	}
 }
+
+void Column::SetActivated(bool activated) {
+	_activated = false;
+	//_active = 0;
+
+	if(activated) {
+		_widgets->at(_active)->SetSelected(true);
+	}
+}
+
+void Column::Updated() {
+	for (unsigned int i = 0; i < _widgets->size(); i++) {
+		_widgets->at(i)->SetSelected(_widgets->at(i)->GetActivated());
+		if (_widgets->at(i)->GetActivated()) { _active = i; }
+	}
+}
+
 void Column::DrawContent(short int x, short int y) {
 	unsigned int height = y;
 	for (auto& widget : *_widgets) {
@@ -262,10 +367,11 @@ unsigned int Column::InnerWidth() {
 }
 
 
-TextBox::TextBox(shared_ptr<string> text, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height) : Widget(title, border) {
+TextBox::TextBox(shared_ptr<string> text, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height, bool readonly) : Widget(title, border) {
 	_width = width;
 	_height = height;
 	_text = text;
+	_readonly = readonly;
 }
 
 
@@ -307,22 +413,35 @@ shared_ptr<string> TextBox::Text() {
 	return _text;
 }
 
-void TextBox::Navigate(Navigation direction) {
-	CONSOLE_CURSOR_INFO cursor {
-		1,
-		true
-	};
+void TextBox::Navigate(Navigation direction, shared_ptr<Interface> ifce) {
+	if (direction == Navigation::In || direction == Navigation::Activate) {
+		ifce->Draw();
+		if (!_readonly) {
+			CONSOLE_CURSOR_INFO cursor{
+				1,
+				true
+			};
 
-	SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor);
+			SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cursor);
 
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ (short)_x, (short)_y });
+			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), COORD{ (short)_x, (short)_y });
 
-	string line;
-	getline(cin, line);
+			string line;
+			getline(cin, line);
 
-	*_text = line;
-
+			*_text = line;
+			if (_callback) {
+				_callback(shared_from_this());
+			}
+		}
+		ifce->StepOut();
+	}
 }
+
+void TextBox::OnChange(function<void(shared_ptr<TextBox>)> callback) {
+	_callback = callback;
+}
+
 
 Fader::Fader(shared_ptr<double> value, shared_ptr<string> title, BorderSize border, unsigned int width, unsigned int height, double max) : Widget(title, border) {
 	_width = width;
@@ -395,4 +514,28 @@ void Fader::DrawContent(short int x, short int y) {
 
 shared_ptr<double> Fader::Value() {
 	return _value;
+}
+
+
+void Fader::Navigate(Navigation direction, shared_ptr<Interface> ifce) {
+	switch (direction) {
+	case Navigation::Up:
+		*_value += 10;
+		if (*_value > _max) { *_value = _max;  }
+		break;
+	case Navigation::Down:
+		if (*_value < 10) { *_value = 0; } else { *_value -= 10; }
+		break;
+	case Navigation::Out:
+		ifce->StepOut();
+		break;
+	}
+
+	if (_callback && (direction == Navigation::Up || direction == Navigation::Down)) {
+		_callback(shared_from_this());
+	}
+}
+
+void Fader::OnChange(function<void(shared_ptr<Fader>)> callback) {
+	_callback = callback;
 }
